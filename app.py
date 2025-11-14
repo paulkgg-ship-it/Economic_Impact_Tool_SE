@@ -1,5 +1,8 @@
 import streamlit as st
 from dotenv import load_dotenv
+from economic_calculator import calculate_economic_impact
+import plotly.graph_objects as go
+import plotly.express as px
 
 load_dotenv()
 
@@ -98,3 +101,38 @@ st.markdown(
     '<div class="welcome-message">Complete the form below to generate your economic impact report</div>',
     unsafe_allow_html=True
 )
+
+if 'form_data' not in st.session_state:
+    st.session_state['form_data'] = {}
+if 'report_generated' not in st.session_state:
+    st.session_state['report_generated'] = False
+
+st.markdown("---")
+
+with st.form("economic_impact_form"):
+    
+    with st.expander("📋 Project Description", expanded=True):
+        st.write("Fields coming soon")
+    
+    with st.expander("🏢 Project Type & Use", expanded=True):
+        st.write("Fields coming soon")
+    
+    with st.expander("💰 Project Costs", expanded=True):
+        st.write("Fields coming soon")
+    
+    with st.expander("👥 Operations", expanded=True):
+        st.write("Fields coming soon")
+    
+    with st.expander("💵 Funding Request", expanded=True):
+        st.write("Fields coming soon")
+    
+    st.markdown("<br>", unsafe_allow_html=True)
+    
+    submitted = st.form_submit_button("Generate Report", use_container_width=True)
+    
+    if submitted:
+        st.session_state['report_generated'] = True
+        st.success("✅ Report generation initiated!")
+
+if st.session_state.get('report_generated', False):
+    st.info("Report results will be displayed here once form fields are implemented.")

@@ -4,6 +4,7 @@ version = "0.1.0"
 description = "Add your description here"
 requires-python = ">=3.11"
 dependencies = [
+    "plotly>=6.4.0",
     "python-dotenv==1.0.0",
     "streamlit==1.29.0",
 ]
