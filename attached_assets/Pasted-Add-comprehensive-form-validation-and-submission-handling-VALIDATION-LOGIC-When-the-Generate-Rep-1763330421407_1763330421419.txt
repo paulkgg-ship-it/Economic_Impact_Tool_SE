@@ -1,0 +1,106 @@
+Add comprehensive form validation and submission handling.
+
+VALIDATION LOGIC:
+When the "Generate Report" button is clicked, validate these required fields:
+
+Required fields:
+- project_name
+- property_address
+- building_size
+- building_space_size (Building/Bay/Space Size)
+- current_sf
+- proposed_use
+- proposed_use_sf
+- rent_or_own
+- total_development_costs
+- hard_costs
+- full_time_jobs
+- occupancy
+- funding_request
+
+VALIDATION FLOW:
+```python
+if submitted:
+    # Create a dictionary of required fields with user-friendly names
+    required_fields = {
+        'project_name': 'Project Name',
+        'property_address': 'Property Address',
+        'building_size': 'Building Size',
+        'building_space_size': 'Building/Bay/Space Size',
+        'current_sf': 'Current SF',
+        'proposed_use': 'Proposed Use',
+        'proposed_use_sf': 'Proposed Use SF',
+        'rent_or_own': 'Rent or Own Property',
+        'total_development_costs': 'Total Development Costs',
+        'hard_costs': 'Hard Costs',
+        'full_time_jobs': 'Full Time Jobs',
+        'occupancy': 'Occupancy',
+        'funding_request': 'Funding Request'
+    }
+    
+    # Check for missing fields
+    missing_fields = []
+    for field_key, field_name in required_fields.items():
+        value = locals().get(field_key)
+        if value is None or value == '' or (isinstance(value, (int, float)) and value == 0 and field_key != 'current_taxable_value'):
+            missing_fields.append(field_name)
+    
+    # If fields are missing, show error
+    if missing_fields:
+        st.error(f"⚠️ Please fill in all required fields:")
+        for field in missing_fields:
+            st.write(f"  • {field}")
+    else:
+        # All fields valid - show success
+        st.success("✅ Form validated successfully!")
+        
+        # Store all form data in session state
+        st.session_state.form_data = {
+            'project_name': project_name,
+            'property_address': property_address,
+            'parcel_size': parcel_size,
+            'building_size': building_size,
+            'current_taxable_value': current_taxable_value,
+            'building_space_size': building_space_size,
+            'current_sf': current_sf,
+            'additional_notes': additional_notes,
+            'proposed_use': proposed_use,
+            'proposed_use_sf': proposed_use_sf,
+            'rent_or_own': rent_or_own,
+            'purchase_price': purchase_price,
+            'renovation': renovation,
+            'expansion': expansion,
+            'expansion_sf': expansion_sf,
+            'total_development_costs': total_development_costs,
+            'hard_costs': hard_costs,
+            'soft_costs': soft_costs,
+            'financing_costs': financing_costs,
+            'ffe_costs': ffe_costs,
+            'construction_duration': construction_duration,
+            'full_time_jobs': full_time_jobs,
+            'part_time_jobs': part_time_jobs,
+            'average_wage': average_wage,
+            'occupancy': occupancy,
+            'tables': tables,
+            'annual_revenue': annual_revenue,
+            'annual_expenses': annual_expenses,
+            'annual_rent': annual_rent,
+            'rent_per_sf': rent_per_sf,
+            'funding_request': funding_request,
+            'notes': notes
+        }
+        
+        # Set flag that form is complete
+        st.session_state.form_complete = True
+        
+        # Show a spinner simulating processing
+        with st.spinner('🔄 Preparing your data for analysis...'):
+            import time
+            time.sleep(2)
+        
+        st.info("✅ Data validated and ready! Stack.ai integration coming in Phase 2.")
+        st.balloons()  # Celebrate!
+```
+
+AFTER VALIDATION SUCCESS:
+Show a nice data summary section below the form with all the data they entered, formatted nicely.

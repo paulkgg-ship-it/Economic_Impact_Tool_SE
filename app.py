@@ -215,16 +215,13 @@ with st.form("economic_impact_form"):
                 key="rent_or_own"
             )
             
-            if rent_or_own == "Own":
-                purchase_price = st.number_input(
-                    "Purchase Price if Own ($) *",
-                    min_value=0,
-                    step=10000,
-                    help="Purchase price of property",
-                    key="purchase_price"
-                )
-            else:
-                purchase_price = 0
+            purchase_price = st.number_input(
+                "Purchase Price (if Own) ($)",
+                min_value=0,
+                step=10000,
+                help="Leave at 0 if renting",
+                key="purchase_price"
+            )
     
     with st.expander("💰 Project Costs", expanded=True):
         col5, col6 = st.columns(2)
@@ -246,15 +243,12 @@ with st.form("economic_impact_form"):
                 key="expansion"
             )
             
-            if expansion == "yes":
-                expansion_sf = st.number_input(
-                    "Expansion SF *",
-                    min_value=0,
-                    step=100,
-                    key="expansion_sf"
-                )
-            else:
-                expansion_sf = 0
+            expansion_sf = st.number_input(
+                "Expansion SF (if applicable)",
+                min_value=0,
+                step=100,
+                key="expansion_sf"
+            )
             
             total_development_costs = st.number_input(
                 "Total Development Costs ($) *",
@@ -408,41 +402,31 @@ with st.form("economic_impact_form"):
     submitted = st.form_submit_button("Generate Report", use_container_width=True)
     
     if submitted:
-        errors = []
+        required_fields = {
+            'project_name': ('Project Name', project_name),
+            'property_address': ('Property Address', property_address),
+            'building_size': ('Building Size', building_size),
+            'building_bay_size': ('Building/Bay/Space Size', building_bay_size),
+            'current_sf': ('Current SF', current_sf),
+            'proposed_use': ('Proposed Use', proposed_use),
+            'proposed_use_sf': ('Proposed Use SF', proposed_use_sf),
+            'total_development_costs': ('Total Development Costs', total_development_costs),
+            'hard_costs': ('Hard Costs', hard_costs),
+            'occupancy': ('Occupancy', occupancy)
+        }
         
-        if not project_name:
-            errors.append("Project Name is required")
-        if not property_address:
-            errors.append("Property Address is required")
-        if building_size <= 0:
-            errors.append("Building Size must be greater than 0")
-        if building_bay_size <= 0:
-            errors.append("Building/Bay/Space Size must be greater than 0")
-        if current_sf <= 0:
-            errors.append("Current SF must be greater than 0")
-        
-        if not proposed_use:
-            errors.append("Proposed Use is required")
-        if proposed_use_sf <= 0:
-            errors.append("Proposed Use SF must be greater than 0")
-        if rent_or_own == "Own" and purchase_price <= 0:
-            errors.append("Purchase Price is required when owning property")
-        
-        if total_development_costs <= 0:
-            errors.append("Total Development Costs must be greater than 0")
-        if hard_costs <= 0:
-            errors.append("Hard Costs must be greater than 0")
-        if expansion == "yes" and expansion_sf <= 0:
-            errors.append("Expansion SF is required when Expansion is 'yes'")
+        missing_fields = []
+        for field_key, (field_name, value) in required_fields.items():
+            if value is None or value == '' or (isinstance(value, (int, float)) and value <= 0):
+                missing_fields.append(field_name)
         
         if full_time_jobs < 0:
-            errors.append("Full Time Jobs must be 0 or greater")
-        if occupancy < 1:
-            errors.append("Occupancy must be at least 1")
+            missing_fields.append("Full Time Jobs (must be 0 or greater)")
         
-        if errors:
-            for error in errors:
-                st.error(f"❌ {error}")
+        if missing_fields:
+            st.error("⚠️ Please fill in all required fields:")
+            for field in missing_fields:
+                st.write(f"  • {field}")
         else:
             st.session_state['form_data'].update({
                 'project_name': project_name,
@@ -456,10 +440,10 @@ with st.form("economic_impact_form"):
                 'proposed_use': proposed_use,
                 'proposed_use_sf': proposed_use_sf,
                 'rent_or_own': rent_or_own,
-                'purchase_price': purchase_price if rent_or_own == "Own" else 0,
+                'purchase_price': purchase_price,
                 'renovation': renovation,
                 'expansion': expansion,
-                'expansion_sf': expansion_sf if expansion == "yes" else 0,
+                'expansion_sf': expansion_sf,
                 'total_development_costs': total_development_costs,
                 'hard_costs': hard_costs,
                 'soft_costs': soft_costs,
@@ -477,7 +461,16 @@ with st.form("economic_impact_form"):
                 'rent_per_sf': rent_per_sf
             })
             st.session_state['report_generated'] = True
-            st.success("✅ Report generation initiated!")
+            st.session_state['form_complete'] = True
+            
+            st.success("✅ Form validated successfully!")
+            
+            with st.spinner('🔄 Preparing your data for analysis...'):
+                import time
+                time.sleep(2)
+            
+            st.info("✅ Data validated and ready! Stack.ai integration coming in Phase 2.")
+            st.balloons()
 
 if st.session_state.get('report_generated', False):
     st.info("Report results will be displayed here once all form sections are completed.")

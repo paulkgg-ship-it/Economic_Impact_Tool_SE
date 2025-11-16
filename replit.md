@@ -61,14 +61,15 @@ The application currently has:
 
 **Right Column Fields**:
 - Rent or Own Property * (required) - Selectbox with options ["Rent", "Own"], defaults to "Rent"
-- Purchase Price if Own ($) * (conditional) - Number input, only appears when "Own" is selected
+- Purchase Price (if Own) ($) (optional) - Number input, always visible, help text: "Leave at 0 if renting"
 
 **Features**:
-- Dynamic conditional rendering: Purchase Price field shows/hides based on Rent/Own selection
+- All fields always visible (no dynamic show/hide)
+- Clear labeling for conditional fields
 - Form validation for all required fields
-- Conditional validation: Purchase Price required only when "Own" is selected
+- Purchase Price optional - users leave at 0 if renting
 - Help text for all fields
-- Session state storage with proper handling of conditional fields
+- Session state storage of all values
 - All values captured and displayed after successful submission
 
 ### 💰 Project Costs Section (Completed)
@@ -77,7 +78,7 @@ The application currently has:
 **Left Column Fields**:
 - Renovation * (required) - Radio buttons ["yes", "no"], horizontal layout, defaults to "yes"
 - Expansion * (required) - Radio buttons ["yes", "no"], horizontal layout, defaults to "no"
-- Expansion SF * (conditional) - Number input, only appears when Expansion = "yes"
+- Expansion SF (if applicable) (optional) - Number input, always visible
 - Total Development Costs ($) * (required) - Number input with help text
 - Hard Costs ($) * (required) - Number input with help text
 
@@ -96,13 +97,14 @@ The application currently has:
 - All amounts displayed with comma formatting for readability
 
 **Features**:
-- Dynamic conditional rendering: Expansion SF field shows/hides based on Expansion selection
+- All fields always visible (no dynamic show/hide)
+- Clear labeling for conditional fields
 - Intelligent validation: warns but doesn't block when costs don't match
 - Form validation for all required fields
-- Conditional validation: Expansion SF required only when Expansion = "yes"
+- Expansion SF optional - users leave at 0 if not expanding
 - Real-time cost comparison and validation
 - Help text for key fields
-- Session state storage with proper handling of conditional fields
+- Session state storage of all values
 - All values captured and displayed after successful submission
 
 ### 👥 Operations Section (Completed)
@@ -188,6 +190,29 @@ The form sections currently contain placeholder text ("Fields coming soon"). Fut
 The application uses Streamlit's session state to manage:
 - `form_data`: Dictionary storing all form input data
 - `report_generated`: Boolean flag indicating if report has been generated
+- `form_complete`: Boolean flag set to True after successful validation
+
+## Form Validation & Submission
+**Enhanced Validation System:**
+- Comprehensive validation of all required fields with user-friendly error messages
+- Bulleted list display of missing fields for easy identification
+- Required fields: Project Name, Property Address, Building Size, Building/Bay/Space Size, Current SF, Proposed Use, Proposed Use SF, Total Development Costs, Hard Costs, Occupancy
+- Optional fields can be left at 0 (Purchase Price, Expansion SF, etc.)
+
+**Success Flow:**
+1. Form validation passes - all required fields complete
+2. Success message: "✅ Form validated successfully!"
+3. Processing spinner: "🔄 Preparing your data for analysis..." (2-second simulation)
+4. Phase 2 notification: "✅ Data validated and ready! Stack.ai integration coming in Phase 2."
+5. Balloons celebration animation
+6. Session state updated with all form data
+7. Key Metrics Summary and Captured Data sections display below form
+
+**Design Philosophy:**
+- All fields always visible (no dynamic show/hide behavior)
+- Clear labeling for conditional fields (e.g., "Purchase Price (if Own)", "Expansion SF (if applicable)")
+- User-friendly error messages with specific field names
+- Celebration effects to reward completion
 
 ## Testing
 The application has been tested for:
