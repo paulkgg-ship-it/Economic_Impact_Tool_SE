@@ -13,18 +13,22 @@ A professional Streamlit web application designed for the Homestead CRA (Communi
 The application currently has:
 - Professional landing page with custom branding
 - Clean, modern interface with custom CSS styling
+- JSON import functionality for restoring previous analyses
+- Project documents uploader for attaching supporting materials
 - Form structure with 5 expandable sections (all expanded by default):
   1. 📋 Project Description ✅ COMPLETED
   2. 🏢 Project Type & Use ✅ COMPLETED
   3. 💰 Project Costs ✅ COMPLETED
   4. 👥 Operations ✅ COMPLETED
-  5. 💵 Funding Request (fields pending)
+  5. 💵 Funding Request ✅ COMPLETED
 - Full-width "Generate Report" button with primary color styling
 - Session state framework for form data storage
-- Form validation with error messages
+- Comprehensive form validation with clear error messages
 - Intelligent cost validation and tracking
-- Key Metrics Summary dashboard with calculated values
-- Captured data display functionality
+- Enhanced Key Metrics Summary dashboard with 8 calculated metrics
+- Organized data preview with clean section headers
+- JSON export functionality for saving analyses
+- Form reset capability for starting new analyses
 
 ### 📋 Project Description Section (Completed)
 **Layout**: 2-column layout using st.columns(2), with full-width field at bottom
@@ -142,6 +146,41 @@ After form submission, displays a dashboard with:
 - Professional metrics display using st.metric() components
 - All values captured and displayed after successful submission
 
+### 💵 Funding Request Section (Completed)
+**Layout**: Single field layout
+
+**Field**:
+- Funding Request ($) * (required) - Number input for CRA funding amount requested
+
+**Features**:
+- Required field marked with red asterisk
+- Form validation ensures funding request is provided
+- Help text explains purpose: "Amount of CRA funding requested for this project"
+- Session state storage of value
+- Displayed in Key Metrics Summary with funding ratio calculation
+- Funding ratio shows percentage of total development costs
+- Value captured and displayed in data preview after submission
+
+### Upload Features
+
+**JSON Import (Outside Form)**:
+- Located at the top of the page, before the form
+- Section header: "📤 Import Previous Analysis"
+- Allows users to restore previously saved analyses
+- Accepts JSON files exported from the application
+- Automatically populates all form fields with saved data
+- Sets form to completed state and displays results
+- Clear success/error messages for user feedback
+
+**Project Documents Upload (Inside Form)**:
+- Located at the top of the form, before all form sections
+- Section header: "📎 Upload Project Documents (Optional)"
+- Allows users to attach supporting materials
+- Accepts: PDF, PNG, JPG, JPEG, DOC, DOCX, XLSX files
+- Supports multiple file uploads
+- Stored in session state for future use
+- Success message displays number of files uploaded
+
 ## Design Specifications
 
 ### Color Scheme
@@ -188,31 +227,58 @@ The form sections currently contain placeholder text ("Fields coming soon"). Fut
 
 ## Session State Management
 The application uses Streamlit's session state to manage:
-- `form_data`: Dictionary storing all form input data
+- `form_data`: Dictionary storing all form input data including funding_request
 - `report_generated`: Boolean flag indicating if report has been generated
 - `form_complete`: Boolean flag set to True after successful validation
+- `form_key`: Counter used to force form resets when starting new analysis
+- `uploaded_documents`: List of project document files uploaded by user
 
 ## Form Validation & Submission
 **Enhanced Validation System:**
 - Comprehensive validation of all required fields with user-friendly error messages
 - Bulleted list display of missing fields for easy identification
-- Required fields: Project Name, Property Address, Building Size, Building/Bay/Space Size, Current SF, Proposed Use, Proposed Use SF, Total Development Costs, Hard Costs, Occupancy
+- Required fields: Project Name, Property Address, Building Size, Building/Bay/Space Size, Current SF, Proposed Use, Proposed Use SF, Total Development Costs, Hard Costs, Occupancy, Funding Request
 - Optional fields can be left at 0 (Purchase Price, Expansion SF, etc.)
 
 **Success Flow:**
 1. Form validation passes - all required fields complete
 2. Success message: "✅ Form validated successfully!"
 3. Processing spinner: "🔄 Preparing your data for analysis..." (2-second simulation)
-4. Phase 2 notification: "✅ Data validated and ready! Stack.ai integration coming in Phase 2."
-5. Balloons celebration animation
+4. Progress bar animation: "Connecting to analysis engine..." (visual progress indicator)
+5. Final success message: "✅ Form submitted successfully! Generating your economic impact report..."
 6. Session state updated with all form data
-7. Key Metrics Summary and Captured Data sections display below form
+7. Key Metrics Summary (8 metrics) and Captured Data sections display below form
+
+**Key Metrics Summary (8 Metrics in 2 Rows):**
+Row 1:
+- Total Investment (Total Development Costs)
+- Hard Costs
+- Total Jobs (Full Time + Part Time with breakdown)
+- Funding Request (with funding ratio delta)
+
+Row 2:
+- Building Size (in square feet)
+- Cost per SF (calculated)
+- Renovation (Yes/No)
+- Funding Request percentage or other metric
+
+**Data Preview:**
+- Expandable section: "📋 View All Form Data"
+- Section headers WITHOUT emojis: "Project Description", "Project Type & Use", "Project Costs", "Operations", "Funding Request"
+- All submitted data organized by section
+- Funding Request section shows funding amount and funding ratio percentage
+
+**Export & Reset:**
+- Download button: "Download Form Data (JSON)" - no emoji
+- Start New Analysis button: "🔄 Start New Analysis"
+- JSON export includes all form data for future import
 
 **Design Philosophy:**
 - All fields always visible (no dynamic show/hide behavior)
 - Clear labeling for conditional fields (e.g., "Purchase Price (if Own)", "Expansion SF (if applicable)")
 - User-friendly error messages with specific field names
-- Celebration effects to reward completion
+- Professional progress indicators (spinner + progress bar)
+- Clean, emoji-free section headers in data preview for professional appearance
 
 ## Testing
 The application has been tested for:

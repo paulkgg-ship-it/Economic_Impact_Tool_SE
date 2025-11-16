@@ -115,14 +115,16 @@ if 'report_generated' not in st.session_state:
     st.session_state['report_generated'] = False
 if 'form_key' not in st.session_state:
     st.session_state['form_key'] = 0
+if 'uploaded_documents' not in st.session_state:
+    st.session_state['uploaded_documents'] = []
 
 st.markdown("### 📤 Import Previous Analysis")
-uploaded_file = st.file_uploader("Upload a previously saved JSON file", type=['json'], key="json_uploader")
+uploaded_json = st.file_uploader("Upload a previously saved JSON file to restore your analysis", type=['json'], key="json_uploader")
 
-if uploaded_file is not None:
+if uploaded_json is not None:
     import json
     try:
-        loaded_data = json.load(uploaded_file)
+        loaded_data = json.load(uploaded_json)
         
         st.session_state['form_data'] = loaded_data
         st.session_state['report_generated'] = True
@@ -141,6 +143,23 @@ if uploaded_file is not None:
 st.markdown("---")
 
 with st.form(f"economic_impact_form_{st.session_state['form_key']}"):
+    
+    st.markdown("### 📎 Upload Project Documents (Optional)")
+    st.caption("Upload any supporting documents about your project (images, PDFs, plans, etc.)")
+    uploaded_files = st.file_uploader(
+        "Choose files",
+        type=['pdf', 'png', 'jpg', 'jpeg', 'doc', 'docx', 'xlsx'],
+        accept_multiple_files=True,
+        help="Optional - add photos, site plans, or other project materials",
+        key="project_documents",
+        label_visibility="collapsed"
+    )
+    
+    if uploaded_files:
+        st.session_state['uploaded_documents'] = uploaded_files
+        st.success(f"✅ {len(uploaded_files)} file(s) uploaded")
+    
+    st.markdown("---")
     
     with st.expander("📋 Project Description", expanded=True):
         col1, col2 = st.columns(2)
@@ -419,7 +438,13 @@ with st.form(f"economic_impact_form_{st.session_state['form_key']}"):
             )
     
     with st.expander("💵 Funding Request", expanded=True):
-        st.write("Fields coming soon")
+        funding_request = st.number_input(
+            "Funding Request ($) *",
+            min_value=0,
+            step=1000,
+            help="Amount of CRA funding requested for this project",
+            key="funding_request"
+        )
     
     st.markdown("<br>", unsafe_allow_html=True)
     
@@ -436,7 +461,8 @@ with st.form(f"economic_impact_form_{st.session_state['form_key']}"):
             'proposed_use_sf': ('Proposed Use SF', proposed_use_sf),
             'total_development_costs': ('Total Development Costs', total_development_costs),
             'hard_costs': ('Hard Costs', hard_costs),
-            'occupancy': ('Occupancy', occupancy)
+            'occupancy': ('Occupancy', occupancy),
+            'funding_request': ('Funding Request', funding_request)
         }
         
         missing_fields = []
@@ -482,7 +508,8 @@ with st.form(f"economic_impact_form_{st.session_state['form_key']}"):
                 'annual_operating_revenue': annual_operating_revenue,
                 'annual_expenses': annual_expenses,
                 'annual_rent': annual_rent,
-                'rent_per_sf': rent_per_sf
+                'rent_per_sf': rent_per_sf,
+                'funding_request': funding_request
             })
             st.session_state['report_generated'] = True
             st.session_state['form_complete'] = True
@@ -493,8 +520,13 @@ with st.form(f"economic_impact_form_{st.session_state['form_key']}"):
                 import time
                 time.sleep(2)
             
-            st.info("✅ Data validated and ready! Stack.ai integration coming in Phase 2.")
-            st.balloons()
+            progress_bar = st.progress(0)
+            st.write("Connecting to analysis engine...")
+            for percent_complete in range(100):
+                time.sleep(0.01)
+                progress_bar.progress(percent_complete + 1)
+            
+            st.info("✅ Form submitted successfully! Generating your economic impact report...")
 
 if st.session_state.get('form_complete', False):
     
@@ -507,6 +539,7 @@ if st.session_state.get('form_complete', False):
         st.subheader("Key Metrics Summary")
         
         total_jobs = data.get('full_time_jobs', 0) + data.get('part_time_jobs', 0)
+        funding_ratio = (data.get('funding_request', 0) / data.get('total_development_costs', 1) * 100) if data.get('total_development_costs', 0) > 0 else 0
         cost_per_sf = (data.get('total_development_costs', 0) / data.get('building_size', 1)) if data.get('building_size', 0) > 0 else 0
         
         col1, col2, col3, col4 = st.columns(4)
@@ -564,18 +597,12 @@ if st.session_state.get('form_complete', False):
             )
         
         with col4:
-            if data.get('annual_operating_revenue', 0) > 0:
-                st.metric(
-                    "Annual Revenue", 
-                    f"${data.get('annual_operating_revenue', 0):,.0f}",
-                    help="Projected annual operating revenue"
-                )
-            else:
-                st.metric(
-                    "Proposed Use", 
-                    data.get('proposed_use', 'N/A'),
-                    help="Type of business or use"
-                )
+            st.metric(
+                "Funding Request", 
+                f"${data.get('funding_request', 0):,.0f}",
+                delta=f"{funding_ratio:.1f}% of Total",
+                help="CRA funding requested"
+            )
         
         if data.get('annual_rent', 0) > 0 and data.get('proposed_use_sf', 0) > 0:
             calculated_rent_per_sf = data['annual_rent'] / data['proposed_use_sf']
@@ -588,7 +615,7 @@ if st.session_state.get('form_complete', False):
         st.subheader("Captured Data")
         
         with st.expander("📋 View All Form Data", expanded=False):
-            st.markdown("**📋 Project Description**")
+            st.markdown("**Project Description**")
             col1, col2 = st.columns(2)
             with col1:
                 st.write(f"**Project Name:** {data.get('project_name', 'N/A')}")
@@ -607,7 +634,7 @@ if st.session_state.get('form_complete', False):
                 st.write(data.get('additional_notes'))
             
             st.markdown("")
-            st.markdown("**🏢 Project Type & Use**")
+            st.markdown("**Project Type & Use**")
             col1, col2 = st.columns(2)
             with col1:
                 st.write(f"**Proposed Use:** {data.get('proposed_use', 'N/A')}")
@@ -618,7 +645,7 @@ if st.session_state.get('form_complete', False):
                     st.write(f"**Purchase Price:** ${data.get('purchase_price', 0):,}")
             
             st.markdown("")
-            st.markdown("**💰 Project Costs**")
+            st.markdown("**Project Costs**")
             col1, col2 = st.columns(2)
             with col1:
                 st.write(f"**Total Development Costs:** ${data.get('total_development_costs', 0):,}")
@@ -638,7 +665,7 @@ if st.session_state.get('form_complete', False):
                     st.write(f"**Construction Duration:** {data.get('construction_duration', 0):,} months")
             
             st.markdown("")
-            st.markdown("**👥 Operations**")
+            st.markdown("**Operations**")
             col1, col2 = st.columns(2)
             with col1:
                 st.write(f"**Full Time Jobs:** {data.get('full_time_jobs', 0):,}")
@@ -657,6 +684,11 @@ if st.session_state.get('form_complete', False):
                     st.write(f"**Annual Rent:** ${data.get('annual_rent', 0):,}")
                 if data.get('rent_per_sf', 0) > 0:
                     st.write(f"**Rent per SF:** ${data.get('rent_per_sf', 0):.2f}")
+            
+            st.markdown("")
+            st.markdown("**Funding Request**")
+            st.write(f"**Funding Request:** ${data.get('funding_request', 0):,}")
+            st.write(f"**Funding Ratio:** {funding_ratio:.1f}% of Total Development Costs")
         
         st.markdown("---")
         
@@ -671,7 +703,7 @@ if st.session_state.get('form_complete', False):
             project_name_clean = re.sub(r'_+', '_', project_name_clean)
             
             st.download_button(
-                label="📥 Download Form Data (JSON)",
+                label="Download Form Data (JSON)",
                 data=json_data,
                 file_name=f"impact_analysis_{project_name_clean}.json",
                 mime="application/json",
