@@ -161,7 +161,6 @@ with st.form("economic_impact_form"):
                 "Current Taxable Value ($)",
                 min_value=0,
                 step=1000,
-                format="%d",
                 help="Optional - current assessed value",
                 key="current_taxable_value"
             )
@@ -194,7 +193,42 @@ with st.form("economic_impact_form"):
             )
     
     with st.expander("🏢 Project Type & Use", expanded=True):
-        st.write("Fields coming soon")
+        col3, col4 = st.columns(2)
+        
+        with col3:
+            proposed_use = st.text_input(
+                "Proposed Use *",
+                placeholder="e.g., Restaurant, Retail Store, Office",
+                help="Type of business or use",
+                key="proposed_use"
+            )
+            
+            proposed_use_sf = st.number_input(
+                "Proposed Use SF *",
+                min_value=0,
+                step=100,
+                help="Square footage for proposed use",
+                key="proposed_use_sf"
+            )
+        
+        with col4:
+            rent_or_own = st.selectbox(
+                "Rent or Own Property *",
+                options=["Rent", "Own"],
+                index=0,
+                key="rent_or_own"
+            )
+            
+            if rent_or_own == "Own":
+                purchase_price = st.number_input(
+                    "Purchase Price if Own ($) *",
+                    min_value=0,
+                    step=10000,
+                    help="Purchase price of property",
+                    key="purchase_price"
+                )
+            else:
+                purchase_price = 0
     
     with st.expander("💰 Project Costs", expanded=True):
         st.write("Fields coming soon")
@@ -223,6 +257,13 @@ with st.form("economic_impact_form"):
         if current_sf <= 0:
             errors.append("Current SF must be greater than 0")
         
+        if not proposed_use:
+            errors.append("Proposed Use is required")
+        if proposed_use_sf <= 0:
+            errors.append("Proposed Use SF must be greater than 0")
+        if rent_or_own == "Own" and purchase_price <= 0:
+            errors.append("Purchase Price is required when owning property")
+        
         if errors:
             for error in errors:
                 st.error(f"❌ {error}")
@@ -234,7 +275,11 @@ with st.form("economic_impact_form"):
                 'current_taxable_value': current_taxable_value,
                 'parcel_size': parcel_size,
                 'building_bay_size': building_bay_size,
-                'current_sf': current_sf
+                'current_sf': current_sf,
+                'proposed_use': proposed_use,
+                'proposed_use_sf': proposed_use_sf,
+                'rent_or_own': rent_or_own,
+                'purchase_price': purchase_price if rent_or_own == "Own" else 0
             })
             st.session_state['report_generated'] = True
             st.success("✅ Report generation initiated!")

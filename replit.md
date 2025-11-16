@@ -9,13 +9,13 @@ A professional Streamlit web application designed for the Homestead CRA (Communi
 - **Technology Stack**: Python 3.11, Streamlit 1.29.0
 - **Port**: 5000
 
-## Current State (Updated: November 14, 2025)
+## Current State (Updated: November 16, 2025)
 The application currently has:
 - Professional landing page with custom branding
 - Clean, modern interface with custom CSS styling
 - Form structure with 5 expandable sections (all expanded by default):
   1. 📋 Project Description ✅ COMPLETED
-  2. 🏢 Project Type & Use (fields pending)
+  2. 🏢 Project Type & Use ✅ COMPLETED
   3. 💰 Project Costs (fields pending)
   4. 👥 Operations (fields pending)
   5. 💵 Funding Request (fields pending)
@@ -31,7 +31,7 @@ The application currently has:
 - Project Name * (required) - Text input with placeholder
 - Property Address * (required) - Text area (2 rows) with placeholder
 - Building Size (sf) * (required) - Number input
-- Current Taxable Value ($) (optional) - Number input with comma formatting
+- Current Taxable Value ($) (optional) - Number input
 
 **Right Column Fields**:
 - Parcel (Lot) Size (sf) (optional) - Number input
@@ -45,6 +45,25 @@ The application currently has:
 - Help text for all fields
 - Session state storage of all values
 - Data display after successful submission
+
+### 🏢 Project Type & Use Section (Completed)
+**Layout**: 2-column layout using st.columns(2)
+
+**Left Column Fields**:
+- Proposed Use * (required) - Text input with placeholder "e.g., Restaurant, Retail Store, Office"
+- Proposed Use SF * (required) - Number input for square footage
+
+**Right Column Fields**:
+- Rent or Own Property * (required) - Selectbox with options ["Rent", "Own"], defaults to "Rent"
+- Purchase Price if Own ($) * (conditional) - Number input, only appears when "Own" is selected
+
+**Features**:
+- Dynamic conditional rendering: Purchase Price field shows/hides based on Rent/Own selection
+- Form validation for all required fields
+- Conditional validation: Purchase Price required only when "Own" is selected
+- Help text for all fields
+- Session state storage with proper handling of conditional fields
+- All values captured and displayed after successful submission
 
 ## Design Specifications
 
