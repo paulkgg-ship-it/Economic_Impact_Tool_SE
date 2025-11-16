@@ -231,7 +231,99 @@ with st.form("economic_impact_form"):
                 purchase_price = 0
     
     with st.expander("💰 Project Costs", expanded=True):
-        st.write("Fields coming soon")
+        col5, col6 = st.columns(2)
+        
+        with col5:
+            renovation = st.radio(
+                "Renovation *",
+                options=["yes", "no"],
+                index=0,
+                horizontal=True,
+                key="renovation"
+            )
+            
+            expansion = st.radio(
+                "Expansion *",
+                options=["yes", "no"],
+                index=1,
+                horizontal=True,
+                key="expansion"
+            )
+            
+            if expansion == "yes":
+                expansion_sf = st.number_input(
+                    "Expansion SF *",
+                    min_value=0,
+                    step=100,
+                    key="expansion_sf"
+                )
+            else:
+                expansion_sf = 0
+            
+            total_development_costs = st.number_input(
+                "Total Development Costs ($) *",
+                min_value=0,
+                step=1000,
+                help="Total project investment",
+                key="total_development_costs"
+            )
+            
+            hard_costs = st.number_input(
+                "Hard Costs ($) *",
+                min_value=0,
+                step=1000,
+                help="Construction and renovation costs",
+                key="hard_costs"
+            )
+        
+        with col6:
+            soft_costs = st.number_input(
+                "Soft Costs ($)",
+                min_value=0,
+                step=1000,
+                help="Design, permits, professional fees",
+                key="soft_costs"
+            )
+            
+            financing_costs = st.number_input(
+                "Financing Costs ($)",
+                min_value=0,
+                step=1000,
+                key="financing_costs"
+            )
+            
+            ffe_costs = st.number_input(
+                "FF&E Costs ($)",
+                min_value=0,
+                step=1000,
+                help="Furniture, fixtures, and equipment",
+                key="ffe_costs"
+            )
+            
+            construction_duration = st.number_input(
+                "Construction Duration (months)",
+                min_value=0,
+                max_value=60,
+                step=1,
+                key="construction_duration"
+            )
+        
+        costs_sum = hard_costs + soft_costs + financing_costs + ffe_costs
+        
+        st.info(f"💡 **Cost Breakdown:** Soft Costs + Hard Costs + Financing + FF&E = ${costs_sum:,.0f}")
+        
+        if total_development_costs > 0:
+            if costs_sum == total_development_costs:
+                st.success(f"✅ Cost breakdown matches Total Development Costs (${total_development_costs:,.0f})")
+            else:
+                difference = total_development_costs - costs_sum
+                if difference > 0:
+                    st.warning(f"⚠️ Cost breakdown is ${abs(difference):,.0f} less than Total Development Costs")
+                else:
+                    st.warning(f"⚠️ Cost breakdown is ${abs(difference):,.0f} more than Total Development Costs")
+        
+        if hard_costs > total_development_costs and total_development_costs > 0:
+            st.warning(f"⚠️ Hard Costs (${hard_costs:,.0f}) exceed Total Development Costs (${total_development_costs:,.0f})")
     
     with st.expander("👥 Operations", expanded=True):
         st.write("Fields coming soon")
@@ -264,6 +356,13 @@ with st.form("economic_impact_form"):
         if rent_or_own == "Own" and purchase_price <= 0:
             errors.append("Purchase Price is required when owning property")
         
+        if total_development_costs <= 0:
+            errors.append("Total Development Costs must be greater than 0")
+        if hard_costs <= 0:
+            errors.append("Hard Costs must be greater than 0")
+        if expansion == "yes" and expansion_sf <= 0:
+            errors.append("Expansion SF is required when Expansion is 'yes'")
+        
         if errors:
             for error in errors:
                 st.error(f"❌ {error}")
@@ -279,7 +378,16 @@ with st.form("economic_impact_form"):
                 'proposed_use': proposed_use,
                 'proposed_use_sf': proposed_use_sf,
                 'rent_or_own': rent_or_own,
-                'purchase_price': purchase_price if rent_or_own == "Own" else 0
+                'purchase_price': purchase_price if rent_or_own == "Own" else 0,
+                'renovation': renovation,
+                'expansion': expansion,
+                'expansion_sf': expansion_sf if expansion == "yes" else 0,
+                'total_development_costs': total_development_costs,
+                'hard_costs': hard_costs,
+                'soft_costs': soft_costs,
+                'financing_costs': financing_costs,
+                'ffe_costs': ffe_costs,
+                'construction_duration': construction_duration
             })
             st.session_state['report_generated'] = True
             st.success("✅ Report generation initiated!")

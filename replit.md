@@ -16,12 +16,13 @@ The application currently has:
 - Form structure with 5 expandable sections (all expanded by default):
   1. 📋 Project Description ✅ COMPLETED
   2. 🏢 Project Type & Use ✅ COMPLETED
-  3. 💰 Project Costs (fields pending)
+  3. 💰 Project Costs ✅ COMPLETED
   4. 👥 Operations (fields pending)
   5. 💵 Funding Request (fields pending)
 - Full-width "Generate Report" button with primary color styling
 - Session state framework for form data storage
 - Form validation with error messages
+- Intelligent cost validation and tracking
 - Captured data display functionality
 
 ### 📋 Project Description Section (Completed)
@@ -62,6 +63,40 @@ The application currently has:
 - Form validation for all required fields
 - Conditional validation: Purchase Price required only when "Own" is selected
 - Help text for all fields
+- Session state storage with proper handling of conditional fields
+- All values captured and displayed after successful submission
+
+### 💰 Project Costs Section (Completed)
+**Layout**: 2-column layout using st.columns(2)
+
+**Left Column Fields**:
+- Renovation * (required) - Radio buttons ["yes", "no"], horizontal layout, defaults to "yes"
+- Expansion * (required) - Radio buttons ["yes", "no"], horizontal layout, defaults to "no"
+- Expansion SF * (conditional) - Number input, only appears when Expansion = "yes"
+- Total Development Costs ($) * (required) - Number input with help text
+- Hard Costs ($) * (required) - Number input with help text
+
+**Right Column Fields**:
+- Soft Costs ($) (optional) - Number input with help text
+- Financing Costs ($) (optional) - Number input
+- FF&E Costs ($) (optional) - Number input with help text
+- Construction Duration (months) (optional) - Number input, max 60 months
+
+**Intelligent Cost Tracking**:
+- Real-time cost breakdown calculation: Soft + Hard + Financing + FF&E
+- Info box displays total cost breakdown with formatted currency
+- Success message when breakdown matches Total Development Costs
+- Warning message when breakdown differs from Total Development Costs
+- Warning message when Hard Costs exceed Total Development Costs
+- All amounts displayed with comma formatting for readability
+
+**Features**:
+- Dynamic conditional rendering: Expansion SF field shows/hides based on Expansion selection
+- Intelligent validation: warns but doesn't block when costs don't match
+- Form validation for all required fields
+- Conditional validation: Expansion SF required only when Expansion = "yes"
+- Real-time cost comparison and validation
+- Help text for key fields
 - Session state storage with proper handling of conditional fields
 - All values captured and displayed after successful submission
 
