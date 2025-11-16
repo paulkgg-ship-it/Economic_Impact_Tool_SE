@@ -74,10 +74,14 @@ The application currently has:
 ### 💰 Project Costs Section (Completed)
 **Layout**: 2-column layout using st.columns(2)
 
+**Pre-Form Control** (appears BEFORE the form):
+- "Will this project include an expansion?" - Radio buttons ["no", "yes"], horizontal layout, defaults to "no"
+- This control is OUTSIDE the form to enable real-time conditional rendering
+- Selection is stored in st.session_state['expansion_selection'] for immediate access
+
 **Left Column Fields**:
 - Renovation * (required) - Radio buttons ["yes", "no"], horizontal layout, defaults to "yes"
-- Expansion * (required) - Radio buttons ["yes", "no"], horizontal layout, defaults to "no"
-- Expansion SF * (conditional) - Number input, only appears when Expansion = "yes"
+- Expansion SF * (conditional) - Number input, appears IMMEDIATELY when expansion selector = "yes"
 - Total Development Costs ($) * (required) - Number input with help text
 - Hard Costs ($) * (required) - Number input with help text
 
@@ -96,7 +100,8 @@ The application currently has:
 - All amounts displayed with comma formatting for readability
 
 **Features**:
-- Dynamic conditional rendering: Expansion SF field shows/hides based on Expansion selection
+- **Real-time conditional rendering**: Expansion SF field appears/disappears IMMEDIATELY when user toggles expansion selector (no form submission needed)
+- **Session state pattern**: Expansion selector placed outside form to enable instant UI updates while maintaining form data integrity
 - Intelligent validation: warns but doesn't block when costs don't match
 - Form validation for all required fields
 - Conditional validation: Expansion SF required only when Expansion = "yes"

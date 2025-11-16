@@ -113,6 +113,19 @@ if 'form_data' not in st.session_state:
     st.session_state['form_data'] = {}
 if 'report_generated' not in st.session_state:
     st.session_state['report_generated'] = False
+if 'expansion_selection' not in st.session_state:
+    st.session_state['expansion_selection'] = "no"
+
+st.markdown("---")
+
+expansion_selector = st.radio(
+    "Will this project include an expansion?",
+    options=["no", "yes"],
+    horizontal=True,
+    key="expansion_selector",
+    help="Select 'yes' if the project will add square footage"
+)
+st.session_state['expansion_selection'] = expansion_selector
 
 st.markdown("---")
 
@@ -238,20 +251,15 @@ with st.form("economic_impact_form"):
                 key="renovation"
             )
             
-            expansion = st.radio(
-                "Expansion *",
-                options=["yes", "no"],
-                index=1,
-                horizontal=True,
-                key="expansion"
-            )
+            expansion = st.session_state['expansion_selection']
             
             if expansion == "yes":
                 expansion_sf = st.number_input(
                     "Expansion SF *",
                     min_value=0,
                     step=100,
-                    key="expansion_sf"
+                    key="expansion_sf_input",
+                    help="Additional square footage from expansion"
                 )
             else:
                 expansion_sf = 0
