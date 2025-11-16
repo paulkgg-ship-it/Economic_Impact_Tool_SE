@@ -27,7 +27,7 @@ The application currently has:
 - Captured data display functionality
 
 ### 📋 Project Description Section (Completed)
-**Layout**: 2-column layout using st.columns(2)
+**Layout**: 2-column layout using st.columns(2), with full-width field at bottom
 
 **Left Column Fields**:
 - Project Name * (required) - Text input with placeholder
@@ -40,11 +40,15 @@ The application currently has:
 - Building/Bay/Space Size (sf) * (required) - Number input with auto-fill from Building Size
 - Current SF * (required) - Number input with auto-fill from Building Size
 
+**Full-Width Field** (positioned after columns):
+- Additional Notes/Description (optional) - Multi-line text area (3 rows), placeholder: "Add any additional details about the project...", help text for context/background/special circumstances
+
 **Features**:
 - Required fields marked with red asterisk (*)
 - Auto-fill functionality for dependent fields
 - Form validation with error messages
 - Help text for all fields
+- Full-width text area for extended notes and descriptions
 - Session state storage of all values
 - Data display after successful submission
 

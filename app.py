@@ -179,6 +179,14 @@ with st.form("economic_impact_form"):
                 help="Current square footage in use",
                 key="current_sf"
             )
+        
+        additional_notes = st.text_area(
+            "Additional Notes/Description",
+            placeholder="Add any additional details about the project...",
+            help="Optional - provide context, background, or special circumstances",
+            height=90,
+            key="additional_notes"
+        )
     
     with st.expander("🏢 Project Type & Use", expanded=True):
         col3, col4 = st.columns(2)
@@ -444,6 +452,7 @@ with st.form("economic_impact_form"):
                 'parcel_size': parcel_size,
                 'building_bay_size': building_bay_size,
                 'current_sf': current_sf,
+                'additional_notes': additional_notes,
                 'proposed_use': proposed_use,
                 'proposed_use_sf': proposed_use_sf,
                 'rent_or_own': rent_or_own,
