@@ -489,7 +489,7 @@ if st.session_state.get('report_generated', False):
         data = st.session_state['form_data']
         
         st.markdown("---")
-        st.subheader("📊 Key Metrics Summary")
+        st.subheader("Key Metrics Summary")
         
         col_metric1, col_metric2, col_metric3 = st.columns(3)
         
@@ -511,7 +511,7 @@ if st.session_state.get('report_generated', False):
             st.info(f"💡 **Rent Calculation:** Rent per SF ${data['rent_per_sf']:.2f} × Proposed Use SF {data['proposed_use_sf']:,.0f} = **${calculated_annual_rent:,.0f} Annual Rent**")
         
         st.markdown("---")
-        st.subheader("📋 Captured Data")
+        st.subheader("Captured Data")
         with st.expander("View All Form Data", expanded=False):
             for key, value in st.session_state['form_data'].items():
                 st.write(f"**{key.replace('_', ' ').title()}:** {value}")
