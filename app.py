@@ -117,6 +117,8 @@ if 'form_key' not in st.session_state:
     st.session_state['form_key'] = 0
 if 'uploaded_documents' not in st.session_state:
     st.session_state['uploaded_documents'] = []
+if 'report_text' not in st.session_state:
+    st.session_state['report_text'] = None
 
 st.markdown("### 📤 Import Previous Analysis")
 uploaded_json = st.file_uploader("Upload a previously saved JSON file to restore your analysis", type=['json'], key="json_uploader")
@@ -511,26 +513,96 @@ with st.form(f"economic_impact_form_{st.session_state['form_key']}"):
                 'rent_per_sf': rent_per_sf,
                 'funding_request': funding_request
             })
-            st.session_state['report_generated'] = True
             st.session_state['form_complete'] = True
             
             st.success("✅ Form validated successfully!")
             
-            with st.spinner('🔄 Preparing your data for analysis...'):
-                import time
-                time.sleep(2)
-            
-            progress_bar = st.progress(0)
-            st.write("Connecting to analysis engine...")
-            for percent_complete in range(100):
-                time.sleep(0.01)
-                progress_bar.progress(percent_complete + 1)
-            
-            st.info("✅ Form submitted successfully! Generating your economic impact report...")
+            # Call Stack.ai to generate report
+            with st.spinner('🔄 Generating your economic impact report... This may take 30-60 seconds.'):
+                from stack_client import get_stack_client
+                
+                stack_client = get_stack_client()
+                
+                if stack_client is None:
+                    # Stack.ai credentials not configured
+                    st.warning("⚠️ Stack.ai API credentials not configured.")
+                    st.info("Please add STACK_AI_API_KEY and STACK_AI_FLOW_ID to your environment secrets to enable report generation.")
+                    st.session_state['report_generated'] = False
+                    st.session_state['report_text'] = None
+                else:
+                    try:
+                        result = stack_client.run_analysis(st.session_state['form_data'])
+                        
+                        if result['success']:
+                            st.session_state['report_generated'] = True
+                            st.session_state['report_text'] = result['report']
+                            st.success("✅ Report generated successfully!")
+                            st.rerun()
+                        else:
+                            st.error(f"❌ Error generating report: {result['error']}")
+                            st.info("Please check your Stack.ai configuration and try again.")
+                            st.session_state['report_generated'] = False
+                            st.session_state['report_text'] = None
+                            
+                    except Exception as e:
+                        st.error(f"❌ Unexpected error: {str(e)}")
+                        st.info("Please contact support if this issue persists.")
+                        st.session_state['report_generated'] = False
+                        st.session_state['report_text'] = None
 
-if st.session_state.get('form_complete', False):
+# Display report if generated
+if st.session_state.get('report_generated', False) and st.session_state.get('report_text'):
+    st.markdown("---")
+    st.markdown("## 📊 Economic Impact Report")
     
-    st.success("✅ Phase 1 Complete - Data Collection & Validation")
+    # Display the report
+    st.markdown(st.session_state['report_text'])
+    
+    st.markdown("---")
+    
+    # Action buttons
+    col1, col2, col3 = st.columns(3)
+    
+    with col1:
+        import json
+        import re
+        # Download report as text
+        project_name_raw = st.session_state['form_data'].get('project_name', 'project')
+        project_name_clean = re.sub(r'[^a-zA-Z0-9_-]', '_', project_name_raw)
+        project_name_clean = re.sub(r'_+', '_', project_name_clean)
+        
+        st.download_button(
+            label="Download Report (Text)",
+            data=st.session_state['report_text'],
+            file_name=f"economic_impact_{project_name_clean}.txt",
+            mime="text/plain",
+            use_container_width=True
+        )
+    
+    with col2:
+        # Download the JSON data
+        json_data = json.dumps(st.session_state['form_data'], indent=2)
+        st.download_button(
+            label="Download Analysis Data (JSON)",
+            data=json_data,
+            file_name=f"analysis_data_{project_name_clean}.json",
+            mime="application/json",
+            use_container_width=True
+        )
+    
+    with col3:
+        if st.button("Generate New Report", use_container_width=True):
+            # Clear report but keep form data
+            st.session_state['report_generated'] = False
+            st.session_state['report_text'] = None
+            st.session_state['form_complete'] = False
+            st.session_state['form_key'] = st.session_state.get('form_key', 0) + 1
+            st.rerun()
+
+# Show data collection summary if form is complete but report not yet generated
+elif st.session_state.get('form_complete', False):
+    
+    st.success("✅ Data Collection Complete")
     
     if st.session_state['form_data']:
         data = st.session_state['form_data']
