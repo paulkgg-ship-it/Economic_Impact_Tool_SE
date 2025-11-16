@@ -1,0 +1,165 @@
+Integrate Stack.ai API to generate real reports.
+
+SETUP:
+1. Add these to requirements.txt:
+   - requests
+   - python-dotenv (already there)
+
+2. Create a new file called `stack_client.py`:
+```python
+import requests
+import os
+from typing import Dict, Any
+import json
+
+class StackAIClient:
+    def __init__(self):
+        self.api_key = os.getenv('STACK_AI_API_KEY')
+        self.flow_id = os.getenv('STACK_AI_FLOW_ID')
+        self.base_url = "https://www.stack-ai.com/inference/v0/run"
+        
+        if not self.api_key or not self.flow_id:
+            raise ValueError("Stack.ai credentials not found in environment variables")
+    
+    def run_analysis(self, form_data: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Sends form data to Stack.ai and returns the economic impact report
+        """
+        # Prepare the payload
+        payload = {
+            "in-0": json.dumps(form_data),  # Send all form data as JSON string
+            "user_id": f"economic-impact-{form_data.get('project_name', 'unknown')}"
+        }
+        
+        headers = {
+            "Authorization": f"Bearer {self.api_key}",
+            "Content-Type": "application/json"
+        }
+        
+        try:
+            # Make the API call
+            response = requests.post(
+                f"{self.base_url}/{self.flow_id}",
+                headers=headers,
+                json=payload,
+                timeout=120  # 2 minute timeout for LLM processing
+            )
+            
+            response.raise_for_status()
+            
+            # Parse response
+            result = response.json()
+            
+            return {
+                'success': True,
+                'report': result.get('out-0', ''),  # The LLM output
+                'raw_response': result
+            }
+            
+        except requests.exceptions.Timeout:
+            return {
+                'success': False,
+                'error': 'Request timed out. Please try again.',
+                'report': None
+            }
+        except requests.exceptions.RequestException as e:
+            return {
+                'success': False,
+                'error': f'API Error: {str(e)}',
+                'report': None
+            }
+        except Exception as e:
+            return {
+                'success': False,
+                'error': f'Unexpected error: {str(e)}',
+                'report': None
+            }
+
+# Create client instance
+stack_client = StackAIClient()
+```
+
+3. Update app.py to integrate Stack.ai:
+
+In the form submission section (after validation succeeds), replace the fake success message with:
+```python
+# After validation succeeds
+if not missing_fields:
+    st.success("✅ Form validated successfully!")
+    
+    # Store form data in session state
+    st.session_state.form_data = {
+        # ... all the form fields
+    }
+    
+    # Call Stack.ai to generate report
+    with st.spinner('🔄 Generating your economic impact report... This may take 30-60 seconds.'):
+        from stack_client import stack_client
+        
+        try:
+            result = stack_client.run_analysis(st.session_state.form_data)
+            
+            if result['success']:
+                st.session_state.report_generated = True
+                st.session_state.report_text = result['report']
+                st.success("✅ Report generated successfully!")
+                st.rerun()  # Refresh to show report
+            else:
+                st.error(f"❌ Error generating report: {result['error']}")
+                st.info("Please check your Stack.ai configuration and try again.")
+                
+        except Exception as e:
+            st.error(f"❌ Unexpected error: {str(e)}")
+            st.info("Please contact support if this issue persists.")
+```
+
+4. Add report display section (after the form):
+```python
+# Display report if generated
+if st.session_state.get('report_generated', False):
+    st.markdown("---")
+    st.markdown("## 📊 Economic Impact Report")
+    
+    # Display the report
+    st.markdown(st.session_state.report_text)
+    
+    st.markdown("---")
+    
+    # Action buttons
+    col1, col2, col3 = st.columns(3)
+    
+    with col1:
+        # Download as text for now (Word doc in Phase 3)
+        st.download_button(
+            label="Download Report (Text)",
+            data=st.session_state.report_text,
+            file_name=f"economic_impact_{st.session_state.form_data['project_name'].replace(' ', '_')}.txt",
+            mime="text/plain"
+        )
+    
+    with col2:
+        # Download the JSON data
+        st.download_button(
+            label="Download Analysis Data",
+            data=json.dumps(st.session_state.form_data, indent=2),
+            file_name=f"analysis_data_{st.session_state.form_data['project_name'].replace(' ', '_')}.json",
+            mime="application/json"
+        )
+    
+    with col3:
+        if st.button("Generate New Report"):
+            # Clear report but keep form data
+            st.session_state.report_generated = False
+            st.session_state.report_text = None
+            st.rerun()
+```
+
+5. Add Stack.ai credentials to Replit Secrets:
+   - Go to Replit Secrets (lock icon in left sidebar)
+   - Add: STACK_AI_API_KEY = [your API key]
+   - Add: STACK_AI_FLOW_ID = [your flow ID]
+
+6. Update the success message to be more accurate:
+   - Change "Generating your economic impact report..." to show it's real
+   - Add a progress indicator if possible
+   - Show estimated time: "This usually takes 30-60 seconds"
