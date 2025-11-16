@@ -1,0 +1,168 @@
+Add final features to complete the form:
+
+1. DATA PREVIEW SECTION:
+After successful validation, show a collapsible section with all captured data:
+```python
+if st.session_state.get('form_complete', False):
+    st.markdown("---")
+    st.subheader("Captured Data")
+    
+    with st.expander("📋 View All Form Data", expanded=False):
+        # Project Description
+        st.markdown("**Project Description**")
+        col1, col2 = st.columns(2)
+        with col1:
+            st.write(f"Project Name: {st.session_state.form_data['project_name']}")
+            st.write(f"Building Size: {st.session_state.form_data['building_size']:,} sf")
+            st.write(f"Current Taxable Value: ${st.session_state.form_data['current_taxable_value']:,}")
+        with col2:
+            st.write(f"Property Address: {st.session_state.form_data['property_address']}")
+            st.write(f"Proposed Use: {st.session_state.form_data['proposed_use']}")
+        
+        # Project Costs
+        st.markdown("**Project Costs**")
+        col1, col2 = st.columns(2)
+        with col1:
+            st.write(f"Total Development Costs: ${st.session_state.form_data['total_development_costs']:,}")
+            st.write(f"Hard Costs: ${st.session_state.form_data['hard_costs']:,}")
+            st.write(f"Soft Costs: ${st.session_state.form_data['soft_costs']:,}")
+        with col2:
+            st.write(f"Renovation: {st.session_state.form_data['renovation']}")
+            st.write(f"Expansion: {st.session_state.form_data['expansion']}")
+            if st.session_state.form_data['expansion'] == 'yes':
+                st.write(f"Expansion SF: {st.session_state.form_data['expansion_sf']:,}")
+        
+        # Operations
+        st.markdown("**Operations**")
+        col1, col2 = st.columns(2)
+        with col1:
+            st.write(f"Full Time Jobs: {st.session_state.form_data['full_time_jobs']}")
+            st.write(f"Part Time Jobs: {st.session_state.form_data['part_time_jobs']}")
+            st.write(f"Occupancy: {st.session_state.form_data['occupancy']}")
+        with col2:
+            if st.session_state.form_data['annual_revenue'] > 0:
+                st.write(f"Annual Revenue: ${st.session_state.form_data['annual_revenue']:,}")
+            if st.session_state.form_data['annual_rent'] > 0:
+                st.write(f"Annual Rent: ${st.session_state.form_data['annual_rent']:,}")
+        
+        # Funding Request
+        st.markdown("**Funding Request**")
+        st.write(f"Amount Requested: ${st.session_state.form_data['funding_request']:,}")
+        if st.session_state.form_data['notes']:
+            st.write(f"Notes: {st.session_state.form_data['notes']}")
+```
+
+2. EXPORT TO JSON:
+Add a download button to export the form data as JSON:
+```python
+if st.session_state.get('form_complete', False):
+    import json
+    
+    # Convert form data to JSON
+    json_data = json.dumps(st.session_state.form_data, indent=2)
+    
+    # Create download button
+    st.download_button(
+        label="📥 Download Form Data (JSON)",
+        data=json_data,
+        file_name=f"impact_analysis_{st.session_state.form_data['project_name'].replace(' ', '_')}.json",
+        mime="application/json"
+    )
+```
+
+3. IMPORT FROM JSON:
+Add an import function at the top of the page (before the form):
+```python
+# Add this near the top, before the form
+st.markdown("### Import Previous Analysis")
+uploaded_file = st.file_uploader("Upload a previously saved JSON file", type=['json'], key="json_uploader")
+
+if uploaded_file is not None:
+    import json
+    loaded_data = json.load(uploaded_file)
+    st.session_state.form_data = loaded_data
+    st.success("✅ Data loaded successfully! Form fields have been populated.")
+    st.info("Scroll down to review the data and click 'Generate Report' to continue.")
+```
+
+4. RESET FORM BUTTON:
+Add a button to clear all data and start over:
+```python
+if st.session_state.get('form_complete', False):
+    st.markdown("---")
+    col1, col2, col3 = st.columns([1, 1, 1])
+    
+    with col2:
+        if st.button("🔄 Start New Analysis", type="secondary", use_container_width=True):
+            # Clear all session state
+            for key in list(st.session_state.keys()):
+                del st.session_state[key]
+            st.rerun()
+```
+
+5. KEY METRICS SUMMARY:
+At the top of the data preview, add a visual summary of key metrics:
+```python
+if st.session_state.get('form_complete', False):
+    st.markdown("---")
+    st.subheader("Key Metrics Summary")
+    
+    # Calculate some key ratios
+    funding_ratio = (st.session_state.form_data['funding_request'] / 
+                     st.session_state.form_data['total_development_costs'] * 100) if st.session_state.form_data['total_development_costs'] > 0 else 0
+    
+    total_jobs = st.session_state.form_data['full_time_jobs'] + st.session_state.form_data['part_time_jobs']
+    
+    cost_per_sf = (st.session_state.form_data['total_development_costs'] / 
+                   st.session_state.form_data['building_size']) if st.session_state.form_data['building_size'] > 0 else 0
+    
+    # Display in columns
+    col1, col2, col3, col4 = st.columns(4)
+    
+    with col1:
+        st.metric("Total Investment", f"${st.session_state.form_data['total_development_costs']:,.0f}")
+    
+    with col2:
+        st.metric("CRA Funding Request", f"${st.session_state.form_data['funding_request']:,.0f}")
+    
+    with col3:
+        st.metric("Funding %", f"{funding_ratio:.1f}%")
+    
+    with col4:
+        st.metric("Total Jobs", f"{total_jobs}")
+    
+    # Second row
+    col1, col2, col3, col4 = st.columns(4)
+    
+    with col1:
+        st.metric("Building Size", f"{st.session_state.form_data['building_size']:,} sf")
+    
+    with col2:
+        st.metric("Cost per SF", f"${cost_per_sf:,.0f}")
+    
+    with col3:
+        st.metric("Occupancy", f"{st.session_state.form_data['occupancy']}")
+    
+    with col4:
+        if st.session_state.form_data['annual_revenue'] > 0:
+            st.metric("Annual Revenue", f"${st.session_state.form_data['annual_revenue']:,.0f}")
+        else:
+            st.metric("Renovation", st.session_state.form_data['renovation'])
+```
+
+6. FINAL POLISH:
+Add these finishing touches:
+
+- Add a subtle animation when form is successfully submitted (st.balloons() is already added)
+- Add proper spacing between sections (st.markdown("---"))
+- Add a footer with: "Ready to generate your report? Phase 2 coming next!"
+- Add a progress indicator showing "Phase 1 Complete ✅"
+- Make sure all number formatting uses commas (already done with :,)
+- Add tooltips to the metrics explaining what they mean
+
+7. MOBILE RESPONSIVENESS CHECK:
+Ensure everything looks good on mobile:
+- Metrics should stack vertically on small screens
+- Columns should become single column on mobile
+- Buttons should be full-width on mobile
+- Text should be readable without zooming

@@ -113,10 +113,34 @@ if 'form_data' not in st.session_state:
     st.session_state['form_data'] = {}
 if 'report_generated' not in st.session_state:
     st.session_state['report_generated'] = False
+if 'form_key' not in st.session_state:
+    st.session_state['form_key'] = 0
+
+st.markdown("### 📤 Import Previous Analysis")
+uploaded_file = st.file_uploader("Upload a previously saved JSON file", type=['json'], key="json_uploader")
+
+if uploaded_file is not None:
+    import json
+    try:
+        loaded_data = json.load(uploaded_file)
+        
+        st.session_state['form_data'] = loaded_data
+        st.session_state['report_generated'] = True
+        st.session_state['form_complete'] = True
+        
+        for key, value in loaded_data.items():
+            st.session_state[key] = value
+        
+        st.success("✅ Data loaded successfully! Form fields have been populated.")
+        st.info("Scroll down to review the data or click 'Start New Analysis' to begin fresh.")
+    except (json.JSONDecodeError, ValueError) as e:
+        st.error("❌ Error: Invalid JSON file. Please upload a valid JSON file exported from this application.")
+    except Exception as e:
+        st.error(f"❌ Error loading file: {str(e)}")
 
 st.markdown("---")
 
-with st.form("economic_impact_form"):
+with st.form(f"economic_impact_form_{st.session_state['form_key']}"):
     
     with st.expander("📋 Project Description", expanded=True):
         col1, col2 = st.columns(2)
@@ -472,8 +496,9 @@ with st.form("economic_impact_form"):
             st.info("✅ Data validated and ready! Stack.ai integration coming in Phase 2.")
             st.balloons()
 
-if st.session_state.get('report_generated', False):
-    st.info("Report results will be displayed here once all form sections are completed.")
+if st.session_state.get('form_complete', False):
+    
+    st.success("✅ Phase 1 Complete - Data Collection & Validation")
     
     if st.session_state['form_data']:
         data = st.session_state['form_data']
@@ -481,17 +506,76 @@ if st.session_state.get('report_generated', False):
         st.markdown("---")
         st.subheader("Key Metrics Summary")
         
-        col_metric1, col_metric2, col_metric3 = st.columns(3)
+        total_jobs = data.get('full_time_jobs', 0) + data.get('part_time_jobs', 0)
+        cost_per_sf = (data.get('total_development_costs', 0) / data.get('building_size', 1)) if data.get('building_size', 0) > 0 else 0
         
-        with col_metric1:
-            total_jobs = data.get('full_time_jobs', 0) + data.get('part_time_jobs', 0)
-            st.metric("Total Jobs", total_jobs, delta=f"FT: {data.get('full_time_jobs', 0)}, PT: {data.get('part_time_jobs', 0)}")
+        col1, col2, col3, col4 = st.columns(4)
         
-        with col_metric2:
-            st.metric("Total Development Costs", f"${data.get('total_development_costs', 0):,.0f}")
+        with col1:
+            st.metric(
+                "Total Investment", 
+                f"${data.get('total_development_costs', 0):,.0f}",
+                help="Total Development Costs for the project"
+            )
         
-        with col_metric3:
-            st.metric("Occupancy Capacity", data.get('occupancy', 0))
+        with col2:
+            st.metric(
+                "Hard Costs", 
+                f"${data.get('hard_costs', 0):,.0f}",
+                help="Construction and renovation costs"
+            )
+        
+        with col3:
+            st.metric(
+                "Total Jobs", 
+                f"{total_jobs:,}",
+                delta=f"FT: {data.get('full_time_jobs', 0):,}, PT: {data.get('part_time_jobs', 0):,}",
+                help="Full-time and part-time jobs created"
+            )
+        
+        with col4:
+            st.metric(
+                "Occupancy", 
+                f"{data.get('occupancy', 0):,}",
+                help="Maximum number of people"
+            )
+        
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            st.metric(
+                "Building Size", 
+                f"{data.get('building_size', 0):,} sf",
+                help="Total building square footage"
+            )
+        
+        with col2:
+            st.metric(
+                "Cost per SF", 
+                f"${cost_per_sf:,.0f}",
+                help="Total development costs divided by building size"
+            )
+        
+        with col3:
+            st.metric(
+                "Renovation", 
+                data.get('renovation', 'N/A'),
+                help="Whether project includes renovation"
+            )
+        
+        with col4:
+            if data.get('annual_operating_revenue', 0) > 0:
+                st.metric(
+                    "Annual Revenue", 
+                    f"${data.get('annual_operating_revenue', 0):,.0f}",
+                    help="Projected annual operating revenue"
+                )
+            else:
+                st.metric(
+                    "Proposed Use", 
+                    data.get('proposed_use', 'N/A'),
+                    help="Type of business or use"
+                )
         
         if data.get('annual_rent', 0) > 0 and data.get('proposed_use_sf', 0) > 0:
             calculated_rent_per_sf = data['annual_rent'] / data['proposed_use_sf']
@@ -502,6 +586,108 @@ if st.session_state.get('report_generated', False):
         
         st.markdown("---")
         st.subheader("Captured Data")
-        with st.expander("View All Form Data", expanded=False):
-            for key, value in st.session_state['form_data'].items():
-                st.write(f"**{key.replace('_', ' ').title()}:** {value}")
+        
+        with st.expander("📋 View All Form Data", expanded=False):
+            st.markdown("**📋 Project Description**")
+            col1, col2 = st.columns(2)
+            with col1:
+                st.write(f"**Project Name:** {data.get('project_name', 'N/A')}")
+                st.write(f"**Building Size:** {data.get('building_size', 0):,} sf")
+                st.write(f"**Current SF:** {data.get('current_sf', 0):,} sf")
+                if data.get('current_taxable_value', 0) > 0:
+                    st.write(f"**Current Taxable Value:** ${data.get('current_taxable_value', 0):,}")
+            with col2:
+                st.write(f"**Property Address:** {data.get('property_address', 'N/A')}")
+                if data.get('parcel_size', 0) > 0:
+                    st.write(f"**Parcel Size:** {data.get('parcel_size', 0):,} sf")
+                st.write(f"**Building/Bay/Space Size:** {data.get('building_bay_size', 0):,} sf")
+            
+            if data.get('additional_notes'):
+                st.markdown("**Additional Notes:**")
+                st.write(data.get('additional_notes'))
+            
+            st.markdown("")
+            st.markdown("**🏢 Project Type & Use**")
+            col1, col2 = st.columns(2)
+            with col1:
+                st.write(f"**Proposed Use:** {data.get('proposed_use', 'N/A')}")
+                st.write(f"**Proposed Use SF:** {data.get('proposed_use_sf', 0):,} sf")
+            with col2:
+                st.write(f"**Rent or Own:** {data.get('rent_or_own', 'N/A')}")
+                if data.get('purchase_price', 0) > 0:
+                    st.write(f"**Purchase Price:** ${data.get('purchase_price', 0):,}")
+            
+            st.markdown("")
+            st.markdown("**💰 Project Costs**")
+            col1, col2 = st.columns(2)
+            with col1:
+                st.write(f"**Total Development Costs:** ${data.get('total_development_costs', 0):,}")
+                st.write(f"**Hard Costs:** ${data.get('hard_costs', 0):,}")
+                if data.get('soft_costs', 0) > 0:
+                    st.write(f"**Soft Costs:** ${data.get('soft_costs', 0):,}")
+                if data.get('financing_costs', 0) > 0:
+                    st.write(f"**Financing Costs:** ${data.get('financing_costs', 0):,}")
+            with col2:
+                st.write(f"**Renovation:** {data.get('renovation', 'N/A')}")
+                st.write(f"**Expansion:** {data.get('expansion', 'N/A')}")
+                if data.get('expansion_sf', 0) > 0:
+                    st.write(f"**Expansion SF:** {data.get('expansion_sf', 0):,} sf")
+                if data.get('ffe_costs', 0) > 0:
+                    st.write(f"**FF&E Costs:** ${data.get('ffe_costs', 0):,}")
+                if data.get('construction_duration', 0) > 0:
+                    st.write(f"**Construction Duration:** {data.get('construction_duration', 0):,} months")
+            
+            st.markdown("")
+            st.markdown("**👥 Operations**")
+            col1, col2 = st.columns(2)
+            with col1:
+                st.write(f"**Full Time Jobs:** {data.get('full_time_jobs', 0):,}")
+                st.write(f"**Part Time Jobs:** {data.get('part_time_jobs', 0):,}")
+                st.write(f"**Occupancy:** {data.get('occupancy', 0):,} people")
+                if data.get('average_wage', 0) > 0:
+                    st.write(f"**Average Wage:** ${data.get('average_wage', 0):,}")
+            with col2:
+                if data.get('num_tables', 0) > 0:
+                    st.write(f"**# of Tables:** {data.get('num_tables', 0):,}")
+                if data.get('annual_operating_revenue', 0) > 0:
+                    st.write(f"**Annual Revenue:** ${data.get('annual_operating_revenue', 0):,}")
+                if data.get('annual_expenses', 0) > 0:
+                    st.write(f"**Annual Expenses:** ${data.get('annual_expenses', 0):,}")
+                if data.get('annual_rent', 0) > 0:
+                    st.write(f"**Annual Rent:** ${data.get('annual_rent', 0):,}")
+                if data.get('rent_per_sf', 0) > 0:
+                    st.write(f"**Rent per SF:** ${data.get('rent_per_sf', 0):.2f}")
+        
+        st.markdown("---")
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            import json
+            import re
+            json_data = json.dumps(st.session_state['form_data'], indent=2)
+            project_name_raw = data.get('project_name', 'project')
+            project_name_clean = re.sub(r'[^a-zA-Z0-9_-]', '_', project_name_raw)
+            project_name_clean = re.sub(r'_+', '_', project_name_clean)
+            
+            st.download_button(
+                label="📥 Download Form Data (JSON)",
+                data=json_data,
+                file_name=f"impact_analysis_{project_name_clean}.json",
+                mime="application/json",
+                use_container_width=True
+            )
+        
+        with col2:
+            if st.button("🔄 Start New Analysis", type="secondary", use_container_width=True, key="reset_button"):
+                form_key_backup = st.session_state.get('form_key', 0)
+                st.session_state.clear()
+                st.session_state['form_key'] = form_key_backup + 1
+                st.session_state['form_data'] = {}
+                st.session_state['report_generated'] = False
+                st.session_state['form_complete'] = False
+                st.rerun()
+        
+        st.markdown("---")
+        st.info("🎯 **Ready to generate your report?** Phase 2 coming next!")
+        st.caption("Phase 1 Complete ✅ - Your data has been validated and is ready for economic impact analysis.")

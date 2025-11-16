@@ -1,0 +1,52 @@
+Make these quick UX improvements:
+
+1. REMOVE JSON IMPORT (users don't need this):
+   - Remove the file uploader for JSON files at the top
+   - Remove any "Import Previous Analysis" section
+   - Keep the JSON export functionality in the background for our use only
+
+2. CHANGE FILE UPLOADER TO PROJECT DOCUMENTS:
+   - Keep the file uploader but repurpose it for project documents
+   - Move it to the TOP of the form, before the first section
+   - New label: "📎 Upload Project Documents (Optional)"
+   - Description: "Upload any supporting documents about your project (images, PDFs, plans, etc.)"
+   - Help text: "Optional - add photos, site plans, or other project materials"
+   - Accept multiple file types: ['pdf', 'png', 'jpg', 'jpeg', 'doc', 'docx', 'xlsx']
+   - Allow multiple files
+   - Store uploaded files in st.session_state.uploaded_documents
+
+3. REMOVE EXCESSIVE EMOJIS:
+   - Keep emojis ONLY on the expandable section headers (📋 Project Description, 💰 Project Costs, etc.)
+   - Remove emojis from:
+     * "Key Metrics Summary" (no emoji)
+     * "Captured Data" (no emoji)
+     * The download button (change "📥 Download Form Data" to just "Download Form Data (JSON)")
+     * Any other section titles that aren't the main form sections
+
+4. ADD FUNDING REQUEST FIELD:
+   - In the "💵 Funding Request" section, there's currently just a placeholder
+   - Add the actual number input field:
+     * Label: "Funding Request ($)" with asterisk (required)
+     * Min value: 0
+     * Step: 1000
+     * Format: with commas
+     * Help text: "Amount of CRA funding requested for this project"
+     * Make it prominent (larger if possible)
+   - This field should be included in validation as required
+
+5. CHANGE DOWNLOAD BUTTON LABEL:
+   - Change "Download Form Data (JSON)" to "Download Analysis Data"
+   - Add a note below it: "Note: Full report generation coming soon"
+   - Keep the JSON functionality for now (we'll replace with Word doc in Phase 2)
+
+6. REMOVE BALLOONS:
+   - Remove st.balloons() from the success flow
+   - Keep the success message and spinner, just remove the balloon animation
+   - It's too much celebration for a form submission
+
+7. UPDATE SUCCESS MESSAGE:
+   - Change "✅ Data validated and ready! Stack.ai integration coming in Phase 2."
+   - To: "✅ Form submitted successfully! Generating your economic impact report..."
+   - Add a progress bar that shows: "Connecting to analysis engine..." (fake for now, will be real in Phase 2)
+
+Make these changes and ensure all validation still works, especially for the new Funding Request field.
