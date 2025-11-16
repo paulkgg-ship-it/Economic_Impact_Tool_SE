@@ -17,12 +17,13 @@ The application currently has:
   1. 📋 Project Description ✅ COMPLETED
   2. 🏢 Project Type & Use ✅ COMPLETED
   3. 💰 Project Costs ✅ COMPLETED
-  4. 👥 Operations (fields pending)
+  4. 👥 Operations ✅ COMPLETED
   5. 💵 Funding Request (fields pending)
 - Full-width "Generate Report" button with primary color styling
 - Session state framework for form data storage
 - Form validation with error messages
 - Intelligent cost validation and tracking
+- Key Metrics Summary dashboard with calculated values
 - Captured data display functionality
 
 ### 📋 Project Description Section (Completed)
@@ -98,6 +99,41 @@ The application currently has:
 - Real-time cost comparison and validation
 - Help text for key fields
 - Session state storage with proper handling of conditional fields
+- All values captured and displayed after successful submission
+
+### 👥 Operations Section (Completed)
+**Layout**: 2-column layout using st.columns(2)
+
+**Left Column Fields**:
+- Full Time Jobs * (required) - Number input, minimum 0
+- Part Time Jobs (optional) - Number input, minimum 0
+- Average Wage ($) (optional) - Number input with help text
+- Occupancy (# of people) * (required) - Number input, minimum 1, default 20
+
+**Right Column Fields**:
+- # of tables (for restaurants) (optional) - Number input for restaurant-specific data
+- Annual Operating Revenue (stabilized) ($) (optional) - Number input with help text
+- Annual Expenses (stabilized) ($) (optional) - Number input with help text
+- Annual Rent ($) (optional) - Number input with help text
+- Rent per SF ($) (optional) - Number input with decimal precision (format: "%.2f")
+
+**Key Metrics Summary (Post-Submission)**:
+After form submission, displays a dashboard with:
+- **Total Jobs Metric**: Automatically calculated (Full Time + Part Time) with breakdown
+- **Total Development Costs Metric**: Displays total investment
+- **Occupancy Capacity Metric**: Shows maximum occupancy
+- **Rent Calculation Helper**: 
+  - If Annual Rent entered: Shows calculated rent per SF (Annual Rent ÷ Proposed Use SF)
+  - If Rent per SF entered: Shows calculated annual rent (Rent per SF × Proposed Use SF)
+
+**Features**:
+- Simple, intuitive form inputs without dynamic auto-calculation (Streamlit limitation)
+- Smart rent calculation displayed in results section after submission
+- Total jobs automatically calculated and displayed in Key Metrics Summary
+- Form validation for required fields (Full Time Jobs, Occupancy)
+- Help text for all key fields
+- Session state storage of all values
+- Professional metrics display using st.metric() components
 - All values captured and displayed after successful submission
 
 ## Design Specifications

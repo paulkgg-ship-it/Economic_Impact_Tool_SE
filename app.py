@@ -326,7 +326,83 @@ with st.form("economic_impact_form"):
             st.warning(f"⚠️ Hard Costs (${hard_costs:,.0f}) exceed Total Development Costs (${total_development_costs:,.0f})")
     
     with st.expander("👥 Operations", expanded=True):
-        st.write("Fields coming soon")
+        col7, col8 = st.columns(2)
+        
+        with col7:
+            full_time_jobs = st.number_input(
+                "Full Time Jobs *",
+                min_value=0,
+                step=1,
+                help="Number of full-time positions",
+                key="full_time_jobs"
+            )
+            
+            part_time_jobs = st.number_input(
+                "Part Time Jobs",
+                min_value=0,
+                step=1,
+                help="Number of part-time positions",
+                key="part_time_jobs"
+            )
+            
+            average_wage = st.number_input(
+                "Average Wage ($)",
+                min_value=0,
+                step=1000,
+                help="Average annual wage per employee",
+                key="average_wage"
+            )
+            
+            occupancy = st.number_input(
+                "Occupancy (# of people) *",
+                min_value=1,
+                value=20,
+                step=1,
+                help="Maximum occupancy capacity",
+                key="occupancy"
+            )
+        
+        with col8:
+            num_tables = st.number_input(
+                "# of tables (for restaurants)",
+                min_value=0,
+                step=1,
+                help="Leave blank if not a restaurant",
+                key="num_tables"
+            )
+            
+            annual_operating_revenue = st.number_input(
+                "Annual Operating Revenue (stabilized) ($)",
+                min_value=0,
+                step=10000,
+                help="Projected annual revenue at stabilization",
+                key="annual_operating_revenue"
+            )
+            
+            annual_expenses = st.number_input(
+                "Annual Expenses (stabilized) ($)",
+                min_value=0,
+                step=10000,
+                help="Projected annual operating expenses",
+                key="annual_expenses"
+            )
+            
+            annual_rent = st.number_input(
+                "Annual Rent ($)",
+                min_value=0,
+                step=1000,
+                help="Annual rent payment (if applicable)",
+                key="annual_rent"
+            )
+            
+            rent_per_sf = st.number_input(
+                "Rent per SF ($)",
+                min_value=0.0,
+                step=0.1,
+                format="%.2f",
+                help="Annual rent per square foot",
+                key="rent_per_sf"
+            )
     
     with st.expander("💵 Funding Request", expanded=True):
         st.write("Fields coming soon")
@@ -363,6 +439,11 @@ with st.form("economic_impact_form"):
         if expansion == "yes" and expansion_sf <= 0:
             errors.append("Expansion SF is required when Expansion is 'yes'")
         
+        if full_time_jobs < 0:
+            errors.append("Full Time Jobs must be 0 or greater")
+        if occupancy < 1:
+            errors.append("Occupancy must be at least 1")
+        
         if errors:
             for error in errors:
                 st.error(f"❌ {error}")
@@ -387,7 +468,16 @@ with st.form("economic_impact_form"):
                 'soft_costs': soft_costs,
                 'financing_costs': financing_costs,
                 'ffe_costs': ffe_costs,
-                'construction_duration': construction_duration
+                'construction_duration': construction_duration,
+                'full_time_jobs': full_time_jobs,
+                'part_time_jobs': part_time_jobs,
+                'average_wage': average_wage,
+                'occupancy': occupancy,
+                'num_tables': num_tables,
+                'annual_operating_revenue': annual_operating_revenue,
+                'annual_expenses': annual_expenses,
+                'annual_rent': annual_rent,
+                'rent_per_sf': rent_per_sf
             })
             st.session_state['report_generated'] = True
             st.success("✅ Report generation initiated!")
@@ -396,7 +486,32 @@ if st.session_state.get('report_generated', False):
     st.info("Report results will be displayed here once all form sections are completed.")
     
     if st.session_state['form_data']:
+        data = st.session_state['form_data']
+        
+        st.markdown("---")
+        st.subheader("📊 Key Metrics Summary")
+        
+        col_metric1, col_metric2, col_metric3 = st.columns(3)
+        
+        with col_metric1:
+            total_jobs = data.get('full_time_jobs', 0) + data.get('part_time_jobs', 0)
+            st.metric("Total Jobs", total_jobs, delta=f"FT: {data.get('full_time_jobs', 0)}, PT: {data.get('part_time_jobs', 0)}")
+        
+        with col_metric2:
+            st.metric("Total Development Costs", f"${data.get('total_development_costs', 0):,.0f}")
+        
+        with col_metric3:
+            st.metric("Occupancy Capacity", data.get('occupancy', 0))
+        
+        if data.get('annual_rent', 0) > 0 and data.get('proposed_use_sf', 0) > 0:
+            calculated_rent_per_sf = data['annual_rent'] / data['proposed_use_sf']
+            st.info(f"💡 **Rent Calculation:** Annual Rent ${data['annual_rent']:,.0f} ÷ Proposed Use SF {data['proposed_use_sf']:,.0f} = **${calculated_rent_per_sf:.2f} per SF**")
+        elif data.get('rent_per_sf', 0) > 0 and data.get('proposed_use_sf', 0) > 0:
+            calculated_annual_rent = data['rent_per_sf'] * data['proposed_use_sf']
+            st.info(f"💡 **Rent Calculation:** Rent per SF ${data['rent_per_sf']:.2f} × Proposed Use SF {data['proposed_use_sf']:,.0f} = **${calculated_annual_rent:,.0f} Annual Rent**")
+        
+        st.markdown("---")
         st.subheader("📋 Captured Data")
-        with st.expander("View Project Description Data", expanded=False):
+        with st.expander("View All Form Data", expanded=False):
             for key, value in st.session_state['form_data'].items():
                 st.write(f"**{key.replace('_', ' ').title()}:** {value}")
