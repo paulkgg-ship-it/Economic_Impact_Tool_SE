@@ -55,9 +55,38 @@ class StackAIClient:
             # Parse response
             result = response.json()
             
+            # Extract the output - Stack.ai returns outputs in 'outputs' dict
+            outputs = result.get('outputs', {})
+            output_text = outputs.get('out-0', '')
+            
+            # If output is JSON, try to parse and format it
+            if output_text:
+                try:
+                    output_data = json.loads(output_text)
+                    # If it's a dict with HTML fields, combine them
+                    if isinstance(output_data, dict):
+                        report_sections = []
+                        if output_data.get('executive_summary_html'):
+                            report_sections.append(output_data['executive_summary_html'])
+                        if output_data.get('tables_html'):
+                            report_sections.append(output_data['tables_html'])
+                        if output_data.get('why_this_matters_html'):
+                            report_sections.append(output_data['why_this_matters_html'])
+                        if output_data.get('sources_html'):
+                            report_sections.append(output_data['sources_html'])
+                        
+                        if report_sections:
+                            output_text = '\n\n'.join(report_sections)
+                        else:
+                            # If all sections are empty, keep the JSON string
+                            output_text = json.dumps(output_data, indent=2)
+                except json.JSONDecodeError:
+                    # Not JSON, use as-is
+                    pass
+            
             return {
                 'success': True,
-                'report': result.get('out-0', ''),  # The LLM output
+                'report': output_text if output_text else 'Report generated but no content was returned from the AI model.',
                 'raw_response': result
             }
             

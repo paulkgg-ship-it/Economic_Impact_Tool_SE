@@ -119,6 +119,8 @@ if 'uploaded_documents' not in st.session_state:
     st.session_state['uploaded_documents'] = []
 if 'report_text' not in st.session_state:
     st.session_state['report_text'] = None
+if 'api_error' not in st.session_state:
+    st.session_state['api_error'] = None
 
 st.markdown("### 📤 Import Previous Analysis")
 uploaded_json = st.file_uploader("Upload a previously saved JSON file to restore your analysis", type=['json'], key="json_uploader")
@@ -520,35 +522,34 @@ with st.form(f"economic_impact_form_{st.session_state['form_key']}"):
             # Call Stack.ai to generate report
             with st.spinner('🔄 Generating your economic impact report... This may take 30-60 seconds.'):
                 from stack_client import get_stack_client
+                import traceback
                 
-                stack_client = get_stack_client()
-                
-                if stack_client is None:
-                    # Stack.ai credentials not configured
-                    st.warning("⚠️ Stack.ai API credentials not configured.")
-                    st.info("Please add STACK_AI_API_KEY and STACK_AI_FLOW_ID (in format: org_id/flow_id) to your environment secrets to enable report generation.")
-                    st.session_state['report_generated'] = False
-                    st.session_state['report_text'] = None
-                else:
-                    try:
+                try:
+                    stack_client = get_stack_client()
+                    
+                    if stack_client is None:
+                        # Stack.ai credentials not configured
+                        st.session_state['api_error'] = "Stack.ai API credentials not configured. Please add STACK_AI_API_KEY and STACK_AI_FLOW_ID to your environment secrets."
+                        st.session_state['report_generated'] = False
+                        st.session_state['report_text'] = None
+                    else:
                         result = stack_client.run_analysis(st.session_state['form_data'])
                         
                         if result['success']:
                             st.session_state['report_generated'] = True
                             st.session_state['report_text'] = result['report']
+                            st.session_state['api_error'] = None
                             st.success("✅ Report generated successfully!")
                             st.rerun()
                         else:
-                            st.error(f"❌ Error generating report: {result['error']}")
-                            st.info("Please check your Stack.ai configuration and try again.")
+                            st.session_state['api_error'] = f"API Error: {result['error']}"
                             st.session_state['report_generated'] = False
                             st.session_state['report_text'] = None
                             
-                    except Exception as e:
-                        st.error(f"❌ Unexpected error: {str(e)}")
-                        st.info("Please contact support if this issue persists.")
-                        st.session_state['report_generated'] = False
-                        st.session_state['report_text'] = None
+                except Exception as e:
+                    st.session_state['api_error'] = f"Unexpected error: {str(e)}\n\nTraceback:\n{traceback.format_exc()}"
+                    st.session_state['report_generated'] = False
+                    st.session_state['report_text'] = None
 
 # Display report if generated
 if st.session_state.get('report_generated', False) and st.session_state.get('report_text'):
@@ -603,6 +604,12 @@ if st.session_state.get('report_generated', False) and st.session_state.get('rep
 elif st.session_state.get('form_complete', False):
     
     st.success("✅ Data Collection Complete")
+    
+    # Display API error if one occurred
+    if st.session_state.get('api_error'):
+        st.error(f"❌ Report Generation Failed")
+        st.error(st.session_state['api_error'])
+        st.info("Your form data has been saved below. You can try generating the report again or download your data.")
     
     if st.session_state['form_data']:
         data = st.session_state['form_data']
