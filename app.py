@@ -122,33 +122,9 @@ if 'report_text' not in st.session_state:
 if 'api_error' not in st.session_state:
     st.session_state['api_error'] = None
 
-st.markdown("### 📤 Import Previous Analysis")
-uploaded_json = st.file_uploader("Upload a previously saved JSON file to restore your analysis", type=['json'], key="json_uploader")
-
-if uploaded_json is not None:
-    import json
-    try:
-        loaded_data = json.load(uploaded_json)
-        
-        st.session_state['form_data'] = loaded_data
-        st.session_state['report_generated'] = True
-        st.session_state['form_complete'] = True
-        
-        for key, value in loaded_data.items():
-            st.session_state[key] = value
-        
-        st.success("✅ Data loaded successfully! Form fields have been populated.")
-        st.info("Scroll down to review the data or click 'Start New Analysis' to begin fresh.")
-    except (json.JSONDecodeError, ValueError) as e:
-        st.error("❌ Error: Invalid JSON file. Please upload a valid JSON file exported from this application.")
-    except Exception as e:
-        st.error(f"❌ Error loading file: {str(e)}")
-
-st.markdown("---")
-
 with st.form(f"economic_impact_form_{st.session_state['form_key']}"):
     
-    st.markdown("### 📎 Upload Project Documents (Optional)")
+    st.markdown("### Upload Project Documents (Optional)")
     st.caption("Upload any supporting documents about your project (images, PDFs, plans, etc.)")
     uploaded_files = st.file_uploader(
         "Choose files",
@@ -165,7 +141,7 @@ with st.form(f"economic_impact_form_{st.session_state['form_key']}"):
     
     st.markdown("---")
     
-    with st.expander("📋 Project Description", expanded=True):
+    with st.expander("Project Description", expanded=True):
         col1, col2 = st.columns(2)
         
         with col1:
@@ -235,7 +211,7 @@ with st.form(f"economic_impact_form_{st.session_state['form_key']}"):
             key="additional_notes"
         )
     
-    with st.expander("🏢 Project Type & Use", expanded=True):
+    with st.expander("Project Type & Use", expanded=True):
         col3, col4 = st.columns(2)
         
         with col3:
@@ -270,7 +246,7 @@ with st.form(f"economic_impact_form_{st.session_state['form_key']}"):
                 key="purchase_price"
             )
     
-    with st.expander("💰 Project Costs", expanded=True):
+    with st.expander("Project Costs", expanded=True):
         col5, col6 = st.columns(2)
         
         with col5:
@@ -362,7 +338,7 @@ with st.form(f"economic_impact_form_{st.session_state['form_key']}"):
         if hard_costs > total_development_costs and total_development_costs > 0:
             st.warning(f"⚠️ Hard Costs (${hard_costs:,.0f}) exceed Total Development Costs (${total_development_costs:,.0f})")
     
-    with st.expander("👥 Operations", expanded=True):
+    with st.expander("Operations", expanded=True):
         col7, col8 = st.columns(2)
         
         with col7:
@@ -441,7 +417,7 @@ with st.form(f"economic_impact_form_{st.session_state['form_key']}"):
                 key="rent_per_sf"
             )
     
-    with st.expander("💵 Funding Request", expanded=True):
+    with st.expander("Funding Request", expanded=True):
         funding_request = st.number_input(
             "Funding Request ($) *",
             min_value=0,
@@ -554,7 +530,7 @@ with st.form(f"economic_impact_form_{st.session_state['form_key']}"):
 # Display report if generated
 if st.session_state.get('report_generated', False) and st.session_state.get('report_text'):
     st.markdown("---")
-    st.markdown("## 📊 Economic Impact Report")
+    st.markdown("## Economic Impact Report")
     
     # Display the report
     st.markdown(st.session_state['report_text'])
