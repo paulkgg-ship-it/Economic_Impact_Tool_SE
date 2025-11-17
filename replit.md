@@ -1,289 +1,48 @@
 # Economic Impact Analysis Tool
 
 ## Overview
-A professional Streamlit web application designed for the Homestead CRA (Community Redevelopment Agency) to analyze economic impacts of development projects. The tool helps calculate and visualize the economic benefits of CRA-funded projects.
+A professional Streamlit web application designed for the Homestead CRA (Community Redevelopment Agency) to analyze economic impacts of development projects. The tool helps calculate and visualize the economic benefits of CRA-funded projects, integrating with Stack.ai for AI-powered report generation. The project aims to provide a comprehensive, user-friendly platform for economic impact assessment.
 
-## Project Details
-- **Name**: Economic Impact Analysis Tool
-- **Edition**: Street Economics - Homestead CRA Edition
-- **Technology Stack**: Python 3.11, Streamlit 1.29.0
-- **Port**: 5000
+## User Preferences
+Not specified. The agent should infer preferences from the provided `replit.md` and act accordingly, prioritizing clarity, maintainability, and functionality.
 
-## Current State (Updated: November 16, 2025)
-The application currently has:
-- Professional landing page with custom branding
-- Clean, modern interface with custom CSS styling
-- JSON import functionality for restoring previous analyses
-- Project documents uploader for attaching supporting materials
-- Form structure with 5 expandable sections (all expanded by default):
-  1. 📋 Project Description ✅ COMPLETED
-  2. 🏢 Project Type & Use ✅ COMPLETED
-  3. 💰 Project Costs ✅ COMPLETED
-  4. 👥 Operations ✅ COMPLETED
-  5. 💵 Funding Request ✅ COMPLETED
-- Full-width "Generate Report" button with primary color styling
-- Session state framework for form data storage
-- Comprehensive form validation with clear error messages
-- Intelligent cost validation and tracking
-- Enhanced Key Metrics Summary dashboard with 8 calculated metrics
-- Organized data preview with clean section headers
-- JSON export functionality for saving analyses
-- Form reset capability for starting new analyses
+## System Architecture
+The application is a Streamlit web application built with Python 3.11.
 
-### 📋 Project Description Section (Completed)
-**Layout**: 2-column layout using st.columns(2), with full-width field at bottom
+**UI/UX Decisions:**
+- Professional landing page with custom branding.
+- Clean, modern interface with custom CSS styling.
+- **Color Scheme**: Primary color #1f4788 (Dark Blue), Secondary color #c41e3a (Red), Clean white background with subtle gray for content blocks.
+- Custom button styling with hover effects, professional input field borders with focus states, responsive two-column layouts, clean visual hierarchy, rounded corners, and smooth transitions.
+- All form fields are always visible (no dynamic show/hide behavior) with clear labeling for conditional fields.
+- User-friendly error messages and professional progress indicators (spinner + progress bar).
 
-**Left Column Fields**:
-- Project Name * (required) - Text input with placeholder
-- Property Address * (required) - Text area (2 rows) with placeholder
-- Building Size (sf) * (required) - Number input
-- Current Taxable Value ($) (optional) - Number input
+**Technical Implementations:**
+- **Form Structure**: 5 expandable sections (Project Description, Project Type & Use, Project Costs, Operations, Funding Request), all expanded by default.
+- **Data Handling**: Session state framework for storing form data, comprehensive form validation with clear error messages, JSON import/export functionality for analysis data.
+- **Cost Validation**: Intelligent cost validation and tracking, including real-time cost breakdown calculation and warnings for discrepancies.
+- **Metrics**: Enhanced Key Metrics Summary dashboard with 8 calculated metrics (e.g., Total Jobs, Total Investment, Cost per SF, Funding Request ratio).
+- **Reporting**: Professional report display with HTML rendering, download capabilities for reports (text) and analysis data (JSON).
+- **Documents**: Project documents uploader supporting various file types (PDF, PNG, JPG, JPEG, DOC, DOCX, XLSX).
 
-**Right Column Fields**:
-- Parcel (Lot) Size (sf) (optional) - Number input
-- Building/Bay/Space Size (sf) * (required) - Number input with auto-fill from Building Size
-- Current SF * (required) - Number input with auto-fill from Building Size
+**Feature Specifications:**
+- **Project Description**: Captures project name, address, building/parcel sizes, current taxable value, and additional notes.
+- **Project Type & Use**: Records proposed use, proposed use SF, rent/own status, and purchase price.
+- **Project Costs**: Details renovation, expansion, total development costs, hard costs, soft costs, financing costs, FF&E costs, and construction duration.
+- **Operations**: Collects full-time/part-time jobs, average wage, occupancy, restaurant tables, annual operating revenue/expenses, and annual/per SF rent. Includes smart rent calculation in results.
+- **Funding Request**: Captures the requested CRA funding amount.
 
-**Full-Width Field** (positioned after columns):
-- Additional Notes/Description (optional) - Multi-line text area (3 rows), placeholder: "Add any additional details about the project...", help text for context/background/special circumstances
+**System Design Choices:**
+- **File Structure**: Organized into `app.py` (main application), `stack_client.py` (Stack.ai integration), `economic_calculator.py` (calculation engine), and `.streamlit/config.toml`.
+- **Workflow**: `streamlit-app` running on port 5000.
 
-**Features**:
-- Required fields marked with red asterisk (*)
-- Auto-fill functionality for dependent fields
-- Form validation with error messages
-- Help text for all fields
-- Full-width text area for extended notes and descriptions
-- Session state storage of all values
-- Data display after successful submission
-
-### 🏢 Project Type & Use Section (Completed)
-**Layout**: 2-column layout using st.columns(2)
-
-**Left Column Fields**:
-- Proposed Use * (required) - Text input with placeholder "e.g., Restaurant, Retail Store, Office"
-- Proposed Use SF * (required) - Number input for square footage
-
-**Right Column Fields**:
-- Rent or Own Property * (required) - Selectbox with options ["Rent", "Own"], defaults to "Rent"
-- Purchase Price (if Own) ($) (optional) - Number input, always visible, help text: "Leave at 0 if renting"
-
-**Features**:
-- All fields always visible (no dynamic show/hide)
-- Clear labeling for conditional fields
-- Form validation for all required fields
-- Purchase Price optional - users leave at 0 if renting
-- Help text for all fields
-- Session state storage of all values
-- All values captured and displayed after successful submission
-
-### 💰 Project Costs Section (Completed)
-**Layout**: 2-column layout using st.columns(2)
-
-**Left Column Fields**:
-- Renovation * (required) - Radio buttons ["yes", "no"], horizontal layout, defaults to "yes"
-- Expansion * (required) - Radio buttons ["yes", "no"], horizontal layout, defaults to "no"
-- Expansion SF (if applicable) (optional) - Number input, always visible
-- Total Development Costs ($) * (required) - Number input with help text
-- Hard Costs ($) * (required) - Number input with help text
-
-**Right Column Fields**:
-- Soft Costs ($) (optional) - Number input with help text
-- Financing Costs ($) (optional) - Number input
-- FF&E Costs ($) (optional) - Number input with help text
-- Construction Duration (months) (optional) - Number input, max 60 months
-
-**Intelligent Cost Tracking**:
-- Real-time cost breakdown calculation: Soft + Hard + Financing + FF&E
-- Info box displays total cost breakdown with formatted currency
-- Success message when breakdown matches Total Development Costs
-- Warning message when breakdown differs from Total Development Costs
-- Warning message when Hard Costs exceed Total Development Costs
-- All amounts displayed with comma formatting for readability
-
-**Features**:
-- All fields always visible (no dynamic show/hide)
-- Clear labeling for conditional fields
-- Intelligent validation: warns but doesn't block when costs don't match
-- Form validation for all required fields
-- Expansion SF optional - users leave at 0 if not expanding
-- Real-time cost comparison and validation
-- Help text for key fields
-- Session state storage of all values
-- All values captured and displayed after successful submission
-
-### 👥 Operations Section (Completed)
-**Layout**: 2-column layout using st.columns(2)
-
-**Left Column Fields**:
-- Full Time Jobs * (required) - Number input, minimum 0
-- Part Time Jobs (optional) - Number input, minimum 0
-- Average Wage ($) (optional) - Number input with help text
-- Occupancy (# of people) * (required) - Number input, minimum 1, default 20
-
-**Right Column Fields**:
-- # of tables (for restaurants) (optional) - Number input for restaurant-specific data
-- Annual Operating Revenue (stabilized) ($) (optional) - Number input with help text
-- Annual Expenses (stabilized) ($) (optional) - Number input with help text
-- Annual Rent ($) (optional) - Number input with help text
-- Rent per SF ($) (optional) - Number input with decimal precision (format: "%.2f")
-
-**Key Metrics Summary (Post-Submission)**:
-After form submission, displays a dashboard with:
-- **Total Jobs Metric**: Automatically calculated (Full Time + Part Time) with breakdown
-- **Total Development Costs Metric**: Displays total investment
-- **Occupancy Capacity Metric**: Shows maximum occupancy
-- **Rent Calculation Helper**: 
-  - If Annual Rent entered: Shows calculated rent per SF (Annual Rent ÷ Proposed Use SF)
-  - If Rent per SF entered: Shows calculated annual rent (Rent per SF × Proposed Use SF)
-
-**Features**:
-- Simple, intuitive form inputs without dynamic auto-calculation (Streamlit limitation)
-- Smart rent calculation displayed in results section after submission
-- Total jobs automatically calculated and displayed in Key Metrics Summary
-- Form validation for required fields (Full Time Jobs, Occupancy)
-- Help text for all key fields
-- Session state storage of all values
-- Professional metrics display using st.metric() components
-- All values captured and displayed after successful submission
-
-### 💵 Funding Request Section (Completed)
-**Layout**: Single field layout
-
-**Field**:
-- Funding Request ($) * (required) - Number input for CRA funding amount requested
-
-**Features**:
-- Required field marked with red asterisk
-- Form validation ensures funding request is provided
-- Help text explains purpose: "Amount of CRA funding requested for this project"
-- Session state storage of value
-- Displayed in Key Metrics Summary with funding ratio calculation
-- Funding ratio shows percentage of total development costs
-- Value captured and displayed in data preview after submission
-
-### Upload Features
-
-**JSON Import (Outside Form)**:
-- Located at the top of the page, before the form
-- Section header: "📤 Import Previous Analysis"
-- Allows users to restore previously saved analyses
-- Accepts JSON files exported from the application
-- Automatically populates all form fields with saved data
-- Sets form to completed state and displays results
-- Clear success/error messages for user feedback
-
-**Project Documents Upload (Inside Form)**:
-- Located at the top of the form, before all form sections
-- Section header: "📎 Upload Project Documents (Optional)"
-- Allows users to attach supporting materials
-- Accepts: PDF, PNG, JPG, JPEG, DOC, DOCX, XLSX files
-- Supports multiple file uploads
-- Stored in session state for future use
-- Success message displays number of files uploaded
-
-## Design Specifications
-
-### Color Scheme
-- **Primary Color**: #1f4788 (Dark Blue) - used for headers, buttons, and accents
-- **Secondary Color**: #c41e3a (Red) - used for special highlights and accents
-- **Background**: Clean white with subtle gray backgrounds for content blocks
-
-### Styling Features
-- Custom button styling with hover effects
-- Professional input field borders with focus states
-- Responsive two-column layouts
-- Clean visual hierarchy with proper spacing and padding
-- Rounded corners and smooth transitions
-
-## File Structure
-```
-.
-├── app.py                      # Main Streamlit application
-├── economic_calculator.py      # Economic impact calculation engine (for future use)
-├── .streamlit/
-│   └── config.toml            # Streamlit server configuration
-├── pyproject.toml             # Python project dependencies
-└── replit.md                  # This documentation file
-```
-
-## Dependencies
-- streamlit==1.29.0
-- python-dotenv==1.0.0
-- plotly==6.4.0 (installed for future visualization features)
-
-## Workflow
-- **Workflow Name**: streamlit-app
-- **Command**: `streamlit run app.py --server.port 5000`
-- **Output Type**: webview
-- **Port**: 5000
-
-## Next Steps
-The form sections currently contain placeholder text ("Fields coming soon"). Future development will add:
-- Actual form fields for data collection in each section
-- Economic impact calculation logic
-- Data visualization components
-- Report generation and export functionality
-- External API integrations for economic data
-
-## Session State Management
-The application uses Streamlit's session state to manage:
-- `form_data`: Dictionary storing all form input data including funding_request
-- `report_generated`: Boolean flag indicating if report has been generated
-- `form_complete`: Boolean flag set to True after successful validation
-- `form_key`: Counter used to force form resets when starting new analysis
-- `uploaded_documents`: List of project document files uploaded by user
-
-## Form Validation & Submission
-**Enhanced Validation System:**
-- Comprehensive validation of all required fields with user-friendly error messages
-- Bulleted list display of missing fields for easy identification
-- Required fields: Project Name, Property Address, Building Size, Building/Bay/Space Size, Current SF, Proposed Use, Proposed Use SF, Total Development Costs, Hard Costs, Occupancy, Funding Request
-- Optional fields can be left at 0 (Purchase Price, Expansion SF, etc.)
-
-**Success Flow:**
-1. Form validation passes - all required fields complete
-2. Success message: "✅ Form validated successfully!"
-3. Processing spinner: "🔄 Preparing your data for analysis..." (2-second simulation)
-4. Progress bar animation: "Connecting to analysis engine..." (visual progress indicator)
-5. Final success message: "✅ Form submitted successfully! Generating your economic impact report..."
-6. Session state updated with all form data
-7. Key Metrics Summary (8 metrics) and Captured Data sections display below form
-
-**Key Metrics Summary (8 Metrics in 2 Rows):**
-Row 1:
-- Total Investment (Total Development Costs)
-- Hard Costs
-- Total Jobs (Full Time + Part Time with breakdown)
-- Funding Request (with funding ratio delta)
-
-Row 2:
-- Building Size (in square feet)
-- Cost per SF (calculated)
-- Renovation (Yes/No)
-- Funding Request percentage or other metric
-
-**Data Preview:**
-- Expandable section: "📋 View All Form Data"
-- Section headers WITHOUT emojis: "Project Description", "Project Type & Use", "Project Costs", "Operations", "Funding Request"
-- All submitted data organized by section
-- Funding Request section shows funding amount and funding ratio percentage
-
-**Export & Reset:**
-- Download button: "Download Form Data (JSON)" - no emoji
-- Start New Analysis button: "🔄 Start New Analysis"
-- JSON export includes all form data for future import
-
-**Design Philosophy:**
-- All fields always visible (no dynamic show/hide behavior)
-- Clear labeling for conditional fields (e.g., "Purchase Price (if Own)", "Expansion SF (if applicable)")
-- User-friendly error messages with specific field names
-- Professional progress indicators (spinner + progress bar)
-- Clean, emoji-free section headers in data preview for professional appearance
-
-## Testing
-The application has been tested for:
-- Visual appearance and styling
-- Expandable section functionality
-- Button interactions and state management
-- Success message display
-- Responsive layout
+## External Dependencies
+- **Streamlit**: `streamlit==1.29.0` for the web application framework.
+- **Python-dotenv**: `python-dotenv==1.0.0` for environment variable management.
+- **Plotly**: `plotly==6.4.0` (installed for future visualization features).
+- **Requests**: `requests==2.31.0` for making HTTP requests to external APIs.
+- **Stack.ai**: Integrated for AI-powered economic impact report generation.
+    - **Endpoint**: `https://api.stack-ai.com/inference/v0/run/{org_id}/{flow_id}`
+    - **Authentication**: Bearer token via `STACK_AI_API_KEY` environment secret.
+    - **Required Secrets**: `STACK_AI_API_KEY`, `STACK_AI_FLOW_ID`.
+    - **Data Exchange**: Sends JSON string of form data, receives structured HTML report content in JSON format.
