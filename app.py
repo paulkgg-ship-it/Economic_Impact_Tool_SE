@@ -526,7 +526,7 @@ with st.form(f"economic_impact_form_{st.session_state['form_key']}"):
                 if stack_client is None:
                     # Stack.ai credentials not configured
                     st.warning("⚠️ Stack.ai API credentials not configured.")
-                    st.info("Please add STACK_AI_API_KEY and STACK_AI_FLOW_ID to your environment secrets to enable report generation.")
+                    st.info("Please add STACK_AI_API_KEY and STACK_AI_FLOW_ID (in format: org_id/flow_id) to your environment secrets to enable report generation.")
                     st.session_state['report_generated'] = False
                     st.session_state['report_text'] = None
                 else:
