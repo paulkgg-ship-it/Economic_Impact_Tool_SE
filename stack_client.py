@@ -3,15 +3,18 @@ import os
 from typing import Dict, Any
 import json
 
+
 class StackAIClient:
+
     def __init__(self):
         self.api_key = os.getenv('STACK_AI_API_KEY')
         flow_id_input = os.getenv('STACK_AI_FLOW_ID')
         self.base_url = "https://api.stack-ai.com/inference/v0/run"
-        
+
         if not self.api_key or not flow_id_input:
-            raise ValueError("Stack.ai credentials not found in environment variables")
-        
+            raise ValueError(
+                "Stack.ai credentials not found in environment variables")
+
         # Parse flow_id - it might be "org_id/flow_id" or just "flow_id"
         if '/' in flow_id_input:
             # Format: org_id/flow_id
@@ -22,25 +25,29 @@ class StackAIClient:
             # Just flow_id - check for separate org_id env var
             self.org_id = os.getenv('STACK_AI_ORG_ID')
             self.flow_id = flow_id_input
-            
+
             if not self.org_id:
-                raise ValueError("STACK_AI_ORG_ID not found. Please provide either 'org_id/flow_id' in STACK_AI_FLOW_ID or set STACK_AI_ORG_ID separately.")
-    
+                raise ValueError(
+                    "STACK_AI_ORG_ID not found. Please provide either 'org_id/flow_id' in STACK_AI_FLOW_ID or set STACK_AI_ORG_ID separately."
+                )
+
     def run_analysis(self, form_data: Dict[str, Any]) -> Dict[str, Any]:
         """
         Sends form data to Stack.ai and returns the economic impact report
         """
         # Prepare the payload
         payload = {
-            "in-0": json.dumps(form_data),  # Send all form data as JSON string
-            "user_id": f"economic-impact-{form_data.get('project_name', 'unknown')}"
+            "in-0":
+            json.dumps(form_data),  # Send all form data as JSON string
+            "user_id":
+            f"economic-impact-{form_data.get('project_name', 'unknown')}"
         }
-        
+
         headers = {
             "Authorization": f"Bearer {self.api_key}",
             "Content-Type": "application/json"
         }
-        
+
         try:
             # Make the API call with org_id and flow_id
             response = requests.post(
@@ -49,32 +56,38 @@ class StackAIClient:
                 json=payload,
                 timeout=120  # 2 minute timeout for LLM processing
             )
-            
+
             response.raise_for_status()
-            
+
             # Parse response
             result = response.json()
-            
+
             # Extract the output - Stack.ai returns outputs in 'outputs' dict
             outputs = result.get('outputs', {})
             output_text = outputs.get('out-0', '')
-            
+
             # If output is JSON, try to parse and format it
+            report_json = None
             if output_text:
                 try:
                     output_data = json.loads(output_text)
-                    # If it's a dict with HTML fields, combine them
+                    # Store the JSON data for structured display
+                    report_json = output_data
+                    
+                    # If it's a dict with HTML fields, combine them for text display
                     if isinstance(output_data, dict):
                         report_sections = []
                         if output_data.get('executive_summary_html'):
-                            report_sections.append(output_data['executive_summary_html'])
+                            report_sections.append(
+                                output_data['executive_summary_html'])
                         if output_data.get('tables_html'):
                             report_sections.append(output_data['tables_html'])
                         if output_data.get('why_this_matters_html'):
-                            report_sections.append(output_data['why_this_matters_html'])
+                            report_sections.append(
+                                output_data['why_this_matters_html'])
                         if output_data.get('sources_html'):
                             report_sections.append(output_data['sources_html'])
-                        
+
                         if report_sections:
                             output_text = '\n\n'.join(report_sections)
                         else:
@@ -83,13 +96,15 @@ class StackAIClient:
                 except json.JSONDecodeError:
                     # Not JSON, use as-is
                     pass
-            
+
             return {
                 'success': True,
-                'report': output_text if output_text else 'Report generated but no content was returned from the AI model.',
+                'report': output_text if output_text else
+                'Report generated but no content was returned from the AI model.',
+                'report_json': report_json,  # Add the structured JSON data
                 'raw_response': result
             }
-            
+
         except requests.exceptions.Timeout:
             return {
                 'success': False,
@@ -108,6 +123,7 @@ class StackAIClient:
                 'error': f'Unexpected error: {str(e)}',
                 'report': None
             }
+
 
 # Create client instance
 def get_stack_client():

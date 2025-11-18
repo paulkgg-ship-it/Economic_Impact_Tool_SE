@@ -514,6 +514,7 @@ with st.form(f"economic_impact_form_{st.session_state['form_key']}"):
                         if result['success']:
                             st.session_state['report_generated'] = True
                             st.session_state['report_text'] = result['report']
+                            st.session_state['report_json'] = result.get('report_json')  # Store structured JSON
                             st.session_state['api_error'] = None
                             st.success("✅ Report generated successfully!")
                             st.rerun()
@@ -528,53 +529,241 @@ with st.form(f"economic_impact_form_{st.session_state['form_key']}"):
                     st.session_state['report_text'] = None
 
 # Display report if generated
-if st.session_state.get('report_generated', False) and st.session_state.get('report_text'):
+if st.session_state.get('report_generated', False):
     st.markdown("---")
     st.markdown("## Economic Impact Report")
+    st.markdown(f"### {st.session_state.form_data['project_name']}")
     
-    # Display the report
-    st.markdown(st.session_state['report_text'])
-    
-    st.markdown("---")
-    
-    # Action buttons
-    col1, col2, col3 = st.columns(3)
-    
-    with col1:
-        import json
-        import re
-        # Download report as text
-        project_name_raw = st.session_state['form_data'].get('project_name', 'project')
-        project_name_clean = re.sub(r'[^a-zA-Z0-9_-]', '_', project_name_raw)
-        project_name_clean = re.sub(r'_+', '_', project_name_clean)
+    # Check if we have JSON data
+    if st.session_state.get('report_json'):
+        report_data = st.session_state.report_json
         
-        st.download_button(
-            label="Download Report (Text)",
-            data=st.session_state['report_text'],
-            file_name=f"economic_impact_{project_name_clean}.txt",
-            mime="text/plain",
-            use_container_width=True
-        )
+        # ===== EXECUTIVE SUMMARY =====
+        st.markdown("### Executive Summary")
+        st.write(report_data.get('executive_summary', ''))
+        # ===== EXECUTIVE SUMMARY =====
+        st.markdown("### Executive Summary")
+        st.write(report_data.get('executive_summary', ''))
+        
+        st.markdown("---")
+        
+        # ===== KEY METRICS =====
+        st.markdown("### Key Metrics at a Glance")
+        
+        col1, col2, col3, col4 = st.columns(4)
+        
+        fiscal = report_data.get('fiscal_highlights', {})
+        construction = report_data.get('construction_impact', {})
+        operations = report_data.get('operations_impact', {})
+        
+        # Get total values from construction table
+        const_total = next((item for item in construction.get('table', []) if item['impact_type'] == 'Total'), {})
+        ops_total = next((item for item in operations.get('table', []) if item['impact_type'] == 'Total'), {})
+        
+        with col1:
+            st.metric(
+                "Year 1 CRA Revenue",
+                f"${fiscal.get('year_1_cra_revenue', 0):,.0f}"
+            )
+        
+        with col2:
+            st.metric(
+                "10-Year CRA Total",
+                f"${fiscal.get('ten_year_cumulative', 0):,.0f}"
+            )
+        
+        with col3:
+            st.metric(
+                "Jobs Created (Annual)",
+                f"{ops_total.get('jobs', 0):.1f}"
+            )
+        
+        with col4:
+            st.metric(
+                "Annual Economic Output",
+                f"${ops_total.get('economic_output', 0):,.0f}"
+            )
+        
+        st.markdown("---")
+        
+        # ===== FISCAL HIGHLIGHTS =====
+        st.markdown("### Fiscal Return Highlights")
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.write(f"**City Millage:** {fiscal.get('city_millage', 0)} mills")
+            st.write(f"**County Millage:** {fiscal.get('county_millage', 0)} mills")
+            st.write(f"**Combined Rate:** {fiscal.get('combined_rate', 0)} mills")
+            st.write(f"**CRA Capture Rate:** {fiscal.get('cra_capture_rate', 0)}%")
+        
+        with col2:
+            st.write(f"**Base Taxable Value:** ${fiscal.get('base_taxable_value', 0):,.0f}")
+            st.write(f"**Incremental Value:** ${fiscal.get('incremental_value', 0):,.0f}")
+            st.write(f"**Year 1 CRA Revenue:** ${fiscal.get('year_1_cra_revenue', 0):,.0f}")
+            st.write(f"**10-Year Cumulative:** ${fiscal.get('ten_year_cumulative', 0):,.0f}")
+        
+        # ===== FISCAL IMPACT TABLE =====
+        st.markdown("### Fiscal Impact Summary")
+        
+        if report_data.get('fiscal_impact_table'):
+            import pandas as pd
+            
+            fiscal_df = pd.DataFrame(report_data['fiscal_impact_table'])
+            
+            # Format the numbers
+            fiscal_df['year_1'] = fiscal_df['year_1'].apply(lambda x: f"${x:,.0f}")
+            fiscal_df['ten_year_cumulative'] = fiscal_df['ten_year_cumulative'].apply(lambda x: f"${x:,.0f}")
+            
+            # Rename columns for display
+            fiscal_df.columns = ['Fiscal Source', 'Year 1', '10-Year Cumulative', 'Notes']
+            
+            st.dataframe(fiscal_df, use_container_width=True, hide_index=True)
+        
+        st.markdown("---")
+        
+        # ===== CONSTRUCTION IMPACT =====
+        st.markdown("### Construction Phase (One-Time)")
+        
+        st.write(construction.get('narrative', ''))
+        
+        if construction.get('table'):
+            import pandas as pd
+            
+            const_df = pd.DataFrame(construction['table'])
+            
+            # Format numbers
+            const_df['economic_output'] = const_df['economic_output'].apply(lambda x: f"${x:,.0f}")
+            const_df['jobs'] = const_df['jobs'].apply(lambda x: f"{x:.1f}")
+            const_df['earnings'] = const_df['earnings'].apply(lambda x: f"${x:,.0f}")
+            
+            # Rename columns
+            const_df.columns = ['Impact Type', 'Economic Output', 'Jobs', 'Earnings']
+            
+            st.dataframe(const_df, use_container_width=True, hide_index=True)
+        
+        st.markdown("---")
+        
+        # ===== OPERATIONS IMPACT =====
+        st.markdown("### Operations Phase (Recurring Annual)")
+        
+        st.write(operations.get('narrative', ''))
+        
+        if operations.get('table'):
+            import pandas as pd
+            
+            ops_df = pd.DataFrame(operations['table'])
+            
+            # Format numbers
+            ops_df['economic_output'] = ops_df['economic_output'].apply(lambda x: f"${x:,.0f}")
+            ops_df['jobs'] = ops_df['jobs'].apply(lambda x: f"{x:.1f}")
+            ops_df['earnings'] = ops_df['earnings'].apply(lambda x: f"${x:,.0f}")
+            
+            # Rename columns
+            ops_df.columns = ['Impact Type', 'Economic Output', 'Jobs', 'Earnings']
+            
+            st.dataframe(ops_df, use_container_width=True, hide_index=True)
+        
+        st.markdown("---")
+        
+        # ===== 10-YEAR PROJECTION =====
+        st.markdown("### Ten-Year Operations Projection")
+        
+        projection = report_data.get('ten_year_projection', {})
+        st.write(projection.get('narrative', ''))
+        
+        if projection.get('table'):
+            import pandas as pd
+            
+            proj_df = pd.DataFrame(projection['table'])
+            
+            # Format numbers
+            proj_df['annual_output'] = proj_df['annual_output'].apply(lambda x: f"${x:,.0f}")
+            proj_df['jobs'] = proj_df['jobs'].apply(lambda x: f"{x:.1f}")
+            proj_df['labor_income'] = proj_df['labor_income'].apply(lambda x: f"${x:,.0f}")
+            
+            # Rename columns
+            proj_df.columns = ['Year', 'Annual Output', 'Jobs', 'Labor Income']
+            
+            st.dataframe(proj_df, use_container_width=True, hide_index=True)
+        
+        st.markdown("---")
+        
+        # ===== CRA INCREMENT PROJECTION =====
+        st.markdown("### CRA Increment Projection (10 Years)")
+        
+        if report_data.get('cra_increment_projection'):
+            import pandas as pd
+            
+            cra_df = pd.DataFrame(report_data['cra_increment_projection'])
+            
+            # Format numbers
+            cra_df['taxable_value'] = cra_df['taxable_value'].apply(lambda x: f"${x:,.0f}")
+            cra_df['cra_increment'] = cra_df['cra_increment'].apply(lambda x: f"${x:,.0f}")
+            cra_df['cumulative'] = cra_df['cumulative'].apply(lambda x: f"${x:,.0f}")
+            
+            # Rename columns
+            cra_df.columns = ['Year', 'Taxable Value', 'CRA Increment', 'Cumulative']
+            
+            st.dataframe(cra_df, use_container_width=True, hide_index=True)
+        
+        st.markdown("---")
+        
+        # ===== COMMUNITY IMPACTS =====
+        st.markdown("### Community and Qualitative Impacts")
+        
+        if report_data.get('community_impacts'):
+            for impact in report_data['community_impacts']:
+                st.markdown(f"**{impact.get('category', '')}**")
+                st.write(impact.get('description', ''))
+                st.write("")  # Add spacing
+        
+        st.markdown("---")
+        
+        # ===== ACTION BUTTONS =====
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            # Download full markdown report
+            if report_data.get('full_report_markdown'):
+                st.download_button(
+                    label="Download Report (Markdown)",
+                    data=report_data['full_report_markdown'],
+                    file_name=f"economic_impact_{st.session_state.form_data['project_name'].replace(' ', '_')}.md",
+                    mime="text/markdown",
+                    use_container_width=True
+                )
+        
+        with col2:
+            # Download JSON data
+            import json
+            st.download_button(
+                label="Download Analysis Data (JSON)",
+                data=json.dumps(report_data, indent=2),
+                file_name=f"analysis_data_{st.session_state.form_data['project_name'].replace(' ', '_')}.json",
+                mime="application/json",
+                use_container_width=True
+            )
+        
+        with col3:
+            # Generate new report
+            if st.button("Generate New Report", use_container_width=True):
+                st.session_state.report_generated = False
+                st.session_state.report_text = None
+                st.session_state.report_json = None
+                st.rerun()
     
-    with col2:
-        # Download the JSON data
-        json_data = json.dumps(st.session_state['form_data'], indent=2)
+    else:
+        # Fallback if no JSON (show raw text)
+        st.markdown(st.session_state.get('report_text', 'No report generated'))
+        
+        # Simple download button
         st.download_button(
-            label="Download Analysis Data (JSON)",
-            data=json_data,
-            file_name=f"analysis_data_{project_name_clean}.json",
-            mime="application/json",
-            use_container_width=True
+            label="Download Report",
+            data=st.session_state.get('report_text', ''),
+            file_name=f"economic_impact_{st.session_state.form_data.get('project_name', 'report').replace(' ', '_')}.txt",
+            mime="text/plain"
         )
-    
-    with col3:
-        if st.button("Generate New Report", use_container_width=True):
-            # Clear report but keep form data
-            st.session_state['report_generated'] = False
-            st.session_state['report_text'] = None
-            st.session_state['form_complete'] = False
-            st.session_state['form_key'] = st.session_state.get('form_key', 0) + 1
-            st.rerun()
 
 # Show data collection summary if form is complete but report not yet generated
 elif st.session_state.get('form_complete', False):
@@ -659,92 +848,6 @@ elif st.session_state.get('form_complete', False):
                 help="CRA funding requested"
             )
         
-        if data.get('annual_rent', 0) > 0 and data.get('proposed_use_sf', 0) > 0:
-            calculated_rent_per_sf = data['annual_rent'] / data['proposed_use_sf']
-            st.info(f"💡 **Rent Calculation:** Annual Rent ${data['annual_rent']:,.0f} ÷ Proposed Use SF {data['proposed_use_sf']:,.0f} = **${calculated_rent_per_sf:.2f} per SF**")
-        elif data.get('rent_per_sf', 0) > 0 and data.get('proposed_use_sf', 0) > 0:
-            calculated_annual_rent = data['rent_per_sf'] * data['proposed_use_sf']
-            st.info(f"💡 **Rent Calculation:** Rent per SF ${data['rent_per_sf']:.2f} × Proposed Use SF {data['proposed_use_sf']:,.0f} = **${calculated_annual_rent:,.0f} Annual Rent**")
-        
-        st.markdown("---")
-        st.subheader("Captured Data")
-        
-        with st.expander("📋 View All Form Data", expanded=False):
-            st.markdown("**Project Description**")
-            col1, col2 = st.columns(2)
-            with col1:
-                st.write(f"**Project Name:** {data.get('project_name', 'N/A')}")
-                st.write(f"**Building Size:** {data.get('building_size', 0):,} sf")
-                st.write(f"**Current SF:** {data.get('current_sf', 0):,} sf")
-                if data.get('current_taxable_value', 0) > 0:
-                    st.write(f"**Current Taxable Value:** ${data.get('current_taxable_value', 0):,}")
-            with col2:
-                st.write(f"**Property Address:** {data.get('property_address', 'N/A')}")
-                if data.get('parcel_size', 0) > 0:
-                    st.write(f"**Parcel Size:** {data.get('parcel_size', 0):,} sf")
-                st.write(f"**Building/Bay/Space Size:** {data.get('building_bay_size', 0):,} sf")
-            
-            if data.get('additional_notes'):
-                st.markdown("**Additional Notes:**")
-                st.write(data.get('additional_notes'))
-            
-            st.markdown("")
-            st.markdown("**Project Type & Use**")
-            col1, col2 = st.columns(2)
-            with col1:
-                st.write(f"**Proposed Use:** {data.get('proposed_use', 'N/A')}")
-                st.write(f"**Proposed Use SF:** {data.get('proposed_use_sf', 0):,} sf")
-            with col2:
-                st.write(f"**Rent or Own:** {data.get('rent_or_own', 'N/A')}")
-                if data.get('purchase_price', 0) > 0:
-                    st.write(f"**Purchase Price:** ${data.get('purchase_price', 0):,}")
-            
-            st.markdown("")
-            st.markdown("**Project Costs**")
-            col1, col2 = st.columns(2)
-            with col1:
-                st.write(f"**Total Development Costs:** ${data.get('total_development_costs', 0):,}")
-                st.write(f"**Hard Costs:** ${data.get('hard_costs', 0):,}")
-                if data.get('soft_costs', 0) > 0:
-                    st.write(f"**Soft Costs:** ${data.get('soft_costs', 0):,}")
-                if data.get('financing_costs', 0) > 0:
-                    st.write(f"**Financing Costs:** ${data.get('financing_costs', 0):,}")
-            with col2:
-                st.write(f"**Renovation:** {data.get('renovation', 'N/A')}")
-                st.write(f"**Expansion:** {data.get('expansion', 'N/A')}")
-                if data.get('expansion_sf', 0) > 0:
-                    st.write(f"**Expansion SF:** {data.get('expansion_sf', 0):,} sf")
-                if data.get('ffe_costs', 0) > 0:
-                    st.write(f"**FF&E Costs:** ${data.get('ffe_costs', 0):,}")
-                if data.get('construction_duration', 0) > 0:
-                    st.write(f"**Construction Duration:** {data.get('construction_duration', 0):,} months")
-            
-            st.markdown("")
-            st.markdown("**Operations**")
-            col1, col2 = st.columns(2)
-            with col1:
-                st.write(f"**Full Time Jobs:** {data.get('full_time_jobs', 0):,}")
-                st.write(f"**Part Time Jobs:** {data.get('part_time_jobs', 0):,}")
-                st.write(f"**Occupancy:** {data.get('occupancy', 0):,} people")
-                if data.get('average_wage', 0) > 0:
-                    st.write(f"**Average Wage:** ${data.get('average_wage', 0):,}")
-            with col2:
-                if data.get('num_tables', 0) > 0:
-                    st.write(f"**# of Tables:** {data.get('num_tables', 0):,}")
-                if data.get('annual_operating_revenue', 0) > 0:
-                    st.write(f"**Annual Revenue:** ${data.get('annual_operating_revenue', 0):,}")
-                if data.get('annual_expenses', 0) > 0:
-                    st.write(f"**Annual Expenses:** ${data.get('annual_expenses', 0):,}")
-                if data.get('annual_rent', 0) > 0:
-                    st.write(f"**Annual Rent:** ${data.get('annual_rent', 0):,}")
-                if data.get('rent_per_sf', 0) > 0:
-                    st.write(f"**Rent per SF:** ${data.get('rent_per_sf', 0):.2f}")
-            
-            st.markdown("")
-            st.markdown("**Funding Request**")
-            st.write(f"**Funding Request:** ${data.get('funding_request', 0):,}")
-            st.write(f"**Funding Ratio:** {funding_ratio:.1f}% of Total Development Costs")
-        
         st.markdown("---")
         
         col1, col2 = st.columns(2)
@@ -774,7 +877,11 @@ elif st.session_state.get('form_complete', False):
                 st.session_state['report_generated'] = False
                 st.session_state['form_complete'] = False
                 st.rerun()
-        
-        st.markdown("---")
-        st.info("🎯 **Ready to generate your report?** Phase 2 coming next!")
-        st.caption("Phase 1 Complete ✅ - Your data has been validated and is ready for economic impact analysis.")
+
+# Footer
+st.markdown("---")
+st.markdown("""
+    <div style='text-align: center; color: #666; font-size: 0.9rem; margin-top: 2rem;'>
+        Powered by Street Economics | BusinessFlare® Analytics
+    </div>
+""", unsafe_allow_html=True)
