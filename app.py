@@ -541,9 +541,6 @@ if st.session_state.get('report_generated', False):
         # ===== EXECUTIVE SUMMARY =====
         st.markdown("### Executive Summary")
         st.write(report_data.get('executive_summary', ''))
-        # ===== EXECUTIVE SUMMARY =====
-        st.markdown("### Executive Summary")
-        st.write(report_data.get('executive_summary', ''))
         
         st.markdown("---")
         
@@ -586,39 +583,23 @@ if st.session_state.get('report_generated', False):
         
         st.markdown("---")
         
-        # ===== FISCAL HIGHLIGHTS =====
-        st.markdown("### Fiscal Return Highlights")
+        # ===== CRA INCREMENT PROJECTION =====
+        st.markdown("### Fiscal Impact: CRA Tax Increment")
         
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            st.write(f"**City Millage:** {fiscal.get('city_millage', 0)} mills")
-            st.write(f"**County Millage:** {fiscal.get('county_millage', 0)} mills")
-            st.write(f"**Combined Rate:** {fiscal.get('combined_rate', 0)} mills")
-            st.write(f"**CRA Capture Rate:** {fiscal.get('cra_capture_rate', 0)}%")
-        
-        with col2:
-            st.write(f"**Base Taxable Value:** ${fiscal.get('base_taxable_value', 0):,.0f}")
-            st.write(f"**Incremental Value:** ${fiscal.get('incremental_value', 0):,.0f}")
-            st.write(f"**Year 1 CRA Revenue:** ${fiscal.get('year_1_cra_revenue', 0):,.0f}")
-            st.write(f"**10-Year Cumulative:** ${fiscal.get('ten_year_cumulative', 0):,.0f}")
-        
-        # ===== FISCAL IMPACT TABLE =====
-        st.markdown("### Fiscal Impact Summary")
-        
-        if report_data.get('fiscal_impact_table'):
+        if report_data.get('cra_increment_projection'):
             import pandas as pd
             
-            fiscal_df = pd.DataFrame(report_data['fiscal_impact_table'])
+            cra_df = pd.DataFrame(report_data['cra_increment_projection'])
             
-            # Format the numbers
-            fiscal_df['year_1'] = fiscal_df['year_1'].apply(lambda x: f"${x:,.0f}")
-            fiscal_df['ten_year_cumulative'] = fiscal_df['ten_year_cumulative'].apply(lambda x: f"${x:,.0f}")
+            # Format numbers
+            cra_df['taxable_value'] = cra_df['taxable_value'].apply(lambda x: f"${x:,.0f}")
+            cra_df['cra_increment'] = cra_df['cra_increment'].apply(lambda x: f"${x:,.0f}")
+            cra_df['cumulative'] = cra_df['cumulative'].apply(lambda x: f"${x:,.0f}")
             
-            # Rename columns for display
-            fiscal_df.columns = ['Fiscal Source', 'Year 1', '10-Year Cumulative', 'Notes']
+            # Rename columns
+            cra_df.columns = ['Year', 'Taxable Value', 'CRA Increment', 'Cumulative']
             
-            st.dataframe(fiscal_df, use_container_width=True, hide_index=True)
+            st.dataframe(cra_df, use_container_width=True, hide_index=True)
         
         st.markdown("---")
         
@@ -689,26 +670,6 @@ if st.session_state.get('report_generated', False):
         
         st.markdown("---")
         
-        # ===== CRA INCREMENT PROJECTION =====
-        st.markdown("### CRA Increment Projection (10 Years)")
-        
-        if report_data.get('cra_increment_projection'):
-            import pandas as pd
-            
-            cra_df = pd.DataFrame(report_data['cra_increment_projection'])
-            
-            # Format numbers
-            cra_df['taxable_value'] = cra_df['taxable_value'].apply(lambda x: f"${x:,.0f}")
-            cra_df['cra_increment'] = cra_df['cra_increment'].apply(lambda x: f"${x:,.0f}")
-            cra_df['cumulative'] = cra_df['cumulative'].apply(lambda x: f"${x:,.0f}")
-            
-            # Rename columns
-            cra_df.columns = ['Year', 'Taxable Value', 'CRA Increment', 'Cumulative']
-            
-            st.dataframe(cra_df, use_container_width=True, hide_index=True)
-        
-        st.markdown("---")
-        
         # ===== COMMUNITY IMPACTS =====
         st.markdown("### Community and Qualitative Impacts")
         
@@ -717,6 +678,38 @@ if st.session_state.get('report_generated', False):
                 st.markdown(f"**{impact.get('category', '')}**")
                 st.write(impact.get('description', ''))
                 st.write("")  # Add spacing
+        
+        st.markdown("---")
+        
+        # ===== SOURCES & METHODOLOGY =====
+        st.markdown("### Sources & Methodology")
+        
+        if report_data.get('sources_methodology'):
+            st.write(report_data['sources_methodology'])
+        else:
+            # Default methodology text if not provided by Stack.ai
+            st.write("""
+This economic impact analysis was prepared using industry-standard methodologies and data sources:
+
+**Data Sources:**
+- Project information provided by the applicant
+- Miami-Dade County Property Appraiser records
+- IMPLAN economic modeling system (where applicable)
+- Local market data and comparable projects
+
+**Methodology:**
+- **Fiscal Impact:** Tax increment calculations based on current millage rates and projected taxable values
+- **Construction Impact:** One-time economic effects during the development phase
+- **Operations Impact:** Ongoing annual economic effects from business operations
+- **Multiplier Effects:** Direct, indirect, and induced impacts on the local economy
+
+**Assumptions:**
+- Property values and tax rates remain constant unless otherwise noted
+- Economic multipliers based on local industry standards
+- Job creation estimates based on industry averages and operational requirements
+
+All projections are subject to market conditions, regulatory changes, and actual project implementation.
+            """)
         
         st.markdown("---")
         
