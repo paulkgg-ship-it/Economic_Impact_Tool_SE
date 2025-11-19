@@ -22,7 +22,7 @@ The application is a Streamlit web application built with Python 3.11.
 - **Data Handling**: Session state framework for storing form data, comprehensive form validation with clear error messages, JSON import/export functionality for analysis data.
 - **Cost Validation**: Intelligent cost validation and tracking, including real-time cost breakdown calculation and warnings for discrepancies.
 - **Metrics**: Enhanced Key Metrics Summary dashboard with 8 calculated metrics (e.g., Total Jobs, Total Investment, Cost per SF, Funding Request ratio).
-- **Reporting**: Professional report display with structured sections in logical order, download capabilities for reports (Markdown) and analysis data (JSON).
+- **Reporting**: Professional report display with structured sections in logical order, download capabilities for reports (PDF with fallback to text) and analysis data (JSON).
 - **Report Structure**: Reports display in this order for optimal readability:
   1. Executive Summary (overview of project impact)
   2. Key Metrics at a Glance (4 key metrics: Year 1 CRA Revenue, 10-Year CRA Total, Jobs Created, Annual Economic Output)

@@ -744,14 +744,44 @@ This methodology is consistent with standard economic development impact analysi
         col1, col2, col3 = st.columns(3)
         
         with col1:
-            # Download full markdown report
-            if report_data.get('full_report_markdown'):
+            # Try to generate PDF, fallback to text if it fails
+            report_content = st.session_state.get('report_text', '')
+            
+            # Try PDF generation first
+            pdf_available = False
+            pdf_data = None
+            
+            try:
+                from pdf_generator import generate_pdf_from_markdown
+                pdf_data = generate_pdf_from_markdown(
+                    report_content,
+                    title=f"Economic Impact Report - {st.session_state.form_data['project_name']}"
+                )
+                pdf_available = True
+            except Exception as e:
+                # Log error for debugging
+                print(f"PDF generation failed: {str(e)}")
+                import traceback
+                print(traceback.format_exc())
+                pdf_available = False
+            
+            # Show appropriate download button
+            if pdf_available and pdf_data:
                 st.download_button(
-                    label="Download Report (Markdown)",
-                    data=report_data['full_report_markdown'],
-                    file_name=f"economic_impact_{st.session_state.form_data['project_name'].replace(' ', '_')}.md",
-                    mime="text/markdown",
+                    label="Download Report (PDF)",
+                    data=pdf_data,
+                    file_name=f"economic_impact_{st.session_state.form_data['project_name'].replace(' ', '_')}.pdf",
+                    mime="application/pdf",
                     use_container_width=True
+                )
+            else:
+                st.download_button(
+                    label="Download Report (Text)",
+                    data=report_content,
+                    file_name=f"economic_impact_{st.session_state.form_data['project_name'].replace(' ', '_')}.txt",
+                    mime="text/plain",
+                    use_container_width=True,
+                    help="PDF format currently unavailable"
                 )
         
         with col2:
