@@ -688,28 +688,47 @@ if st.session_state.get('report_generated', False):
             st.write(report_data['sources_methodology'])
         else:
             # Default methodology text if not provided by Stack.ai
-            st.write("""
-This economic impact analysis was prepared using industry-standard methodologies and data sources:
-
+            st.markdown("""
 **Data Sources:**
-- Project information provided by the applicant
-- Miami-Dade County Property Appraiser records
-- IMPLAN economic modeling system (where applicable)
-- Local market data and comparable projects
+- **Economic Multipliers:** Lightcast 2025 data for Homestead/South Dade region (NAICS-specific industry multipliers)
+- **Demographics:** Esri 2025 demographic profiles for Homestead, FL
+- **Real Estate Data:** CoStar 2025 market data for Homestead commercial properties
+- **Fiscal Parameters:** City of Homestead and Miami-Dade County FY 2025 adopted millage rates
 
 **Methodology:**
-- **Fiscal Impact:** Tax increment calculations based on current millage rates and projected taxable values
-- **Construction Impact:** One-time economic effects during the development phase
-- **Operations Impact:** Ongoing annual economic effects from business operations
-- **Multiplier Effects:** Direct, indirect, and induced impacts on the local economy
 
-**Assumptions:**
-- Property values and tax rates remain constant unless otherwise noted
-- Economic multipliers based on local industry standards
-- Job creation estimates based on industry averages and operational requirements
+This analysis uses economic modeling based on the EMSI Type II methodology, which captures:
+1. **Direct effects** - the immediate impact of project investment and operations
+2. **Indirect effects** - supply chain impacts as businesses purchase goods and services
+3. **Induced effects** - household spending impacts as workers spend their earnings in the local economy
 
-All projections are subject to market conditions, regulatory changes, and actual project implementation.
-            """)
+**Fiscal Impact Calculations:**
+- Incremental taxable value calculated as 60% of hard construction costs (standard capitalization rate for tenant improvements)
+- Ad valorem taxes calculated using combined City and County millage rates
+- CRA captures 95% of incremental tax revenue; 5% retained by each government
+- 10-year projections assume 3% annual property value growth
+
+**Economic Impact Calculations:**
+- Construction impacts based on total development costs
+- Direct construction jobs estimated at 1 job per $100,000 investment
+- Operations impacts based on projected revenue or industry-standard sales per square foot
+- Industry-specific multipliers applied to calculate indirect and induced effects
+- Job-years represent the cumulative employment over the analysis period (e.g., 10 jobs × 10 years = 100 job-years)
+
+**Conservative Assumptions:**
+- Revenue estimates use lower end of industry averages when actual data not provided
+- Employment multipliers are region-specific to avoid overstatement
+- Growth rates (2.5% output, 1% employment) are conservative relative to historical trends
+- All figures rounded to whole dollars
+
+**Limitations:**
+- Analysis assumes project is completed and operating as described
+- Does not account for economic downturns, market disruptions, or competitive changes
+- Multipliers are averages and may vary based on specific supply chain relationships
+- Fiscal projections assume stable millage rates and capture percentages
+
+This methodology is consistent with standard economic development impact analysis practices and is designed to provide conservative, defensible estimates for CRA investment decisions.
+""")
         
         st.markdown("---")
         
