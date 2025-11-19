@@ -684,11 +684,8 @@ if st.session_state.get('report_generated', False):
         # ===== SOURCES & METHODOLOGY =====
         st.markdown("### Sources & Methodology")
         
-        if report_data.get('sources_methodology'):
-            st.write(report_data['sources_methodology'])
-        else:
-            # Default methodology text if not provided by Stack.ai
-            st.markdown("""
+        # Always show CRA-specific methodology (ignore Stack.ai version)
+        st.markdown("""
 **Data Sources:**
 - **Economic Multipliers:** Lightcast 2025 data for Homestead/South Dade region (NAICS-specific industry multipliers)
 - **Demographics:** Esri 2025 demographic profiles for Homestead, FL
