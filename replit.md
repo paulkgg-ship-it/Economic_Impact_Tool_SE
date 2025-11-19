@@ -35,10 +35,10 @@ The application is a Streamlit web application built with Python 3.11.
 - **Documents**: Project documents uploader supporting various file types (PDF, PNG, JPG, JPEG, DOC, DOCX, XLSX).
 
 **Feature Specifications:**
-- **Project Description**: Captures project name, address, building/parcel sizes, current taxable value, and additional notes.
+- **Project Description**: Captures project name*, address*, current taxable value, current use (new field), parcel size, building size, bay/space size*, and current SF*. Fields reorganized for better workflow. (*required fields)
 - **Project Type & Use**: Records proposed use, proposed use SF, rent/own status, and purchase price.
-- **Project Costs**: Details renovation, expansion, total development costs, hard costs, soft costs, financing costs, FF&E costs, and construction duration.
-- **Operations**: Collects full-time/part-time jobs, average wage, occupancy, restaurant tables, annual operating revenue/expenses, and annual/per SF rent. Includes smart rent calculation in results.
+- **Project Costs**: Details renovation, expansion, total development costs, hard costs, soft costs, financing costs, FF&E costs, and construction duration. Requires EITHER Total Development Costs OR Hard Costs (at least one must be entered).
+- **Operations**: Collects full-time/part-time jobs (allows 0 with auto-estimation), average wage, occupancy, restaurant tables, annual operating revenue/expenses, and annual/per SF rent. Includes smart rent calculation in results.
 - **Funding Request**: Captures the requested CRA funding amount.
 
 **System Design Choices:**

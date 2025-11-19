@@ -160,20 +160,19 @@ with st.form(f"economic_impact_form_{st.session_state['form_key']}"):
                 key="property_address"
             )
             
-            building_size = st.number_input(
-                "Building Size (sf) *",
-                min_value=0,
-                step=100,
-                help="Total building square footage",
-                key="building_size"
-            )
-            
             current_taxable_value = st.number_input(
                 "Current Taxable Value ($)",
                 min_value=0,
                 step=1000,
                 help="Optional - current assessed value",
                 key="current_taxable_value"
+            )
+            
+            current_use = st.text_input(
+                "Current Use",
+                placeholder="e.g., Vacant, Office, Warehouse",
+                help="What is the current use of the space? (Optional - helps with narrative)",
+                key="current_use"
             )
         
         with col2:
@@ -185,8 +184,16 @@ with st.form(f"economic_impact_form_{st.session_state['form_key']}"):
                 key="parcel_size"
             )
             
+            building_size = st.number_input(
+                "Building Size (sf)",
+                min_value=0,
+                step=100,
+                help="Optional - total building square footage",
+                key="building_size"
+            )
+            
             building_bay_size = st.number_input(
-                "Building/Bay/Space Size (sf) *",
+                "Bay/Space Size (sf) *",
                 min_value=0,
                 value=int(building_size) if building_size > 0 else 0,
                 step=100,
@@ -274,18 +281,18 @@ with st.form(f"economic_impact_form_{st.session_state['form_key']}"):
             )
             
             total_development_costs = st.number_input(
-                "Total Development Costs ($) *",
+                "Total Development Costs ($)",
                 min_value=0,
                 step=1000,
-                help="Total project investment",
+                help="Total project investment (at least one of Total Development Costs or Hard Costs required)",
                 key="total_development_costs"
             )
             
             hard_costs = st.number_input(
-                "Hard Costs ($) *",
+                "Hard Costs ($)",
                 min_value=0,
                 step=1000,
-                help="Construction and renovation costs",
+                help="Construction and renovation costs (at least one of Total Development Costs or Hard Costs required)",
                 key="hard_costs"
             )
         
@@ -344,11 +351,13 @@ with st.form(f"economic_impact_form_{st.session_state['form_key']}"):
         with col7:
             full_time_jobs = st.number_input(
                 "Full Time Jobs *",
-                min_value=0,
                 step=1,
-                help="Number of full-time positions",
+                help="Enter 0 if unknown. The model will estimate based on project size.",
                 key="full_time_jobs"
             )
+            
+            if full_time_jobs == 0:
+                st.info("ℹ️ If you don't know job count, enter 0 and we'll estimate based on industry standards")
             
             part_time_jobs = st.number_input(
                 "Part Time Jobs",
@@ -434,13 +443,10 @@ with st.form(f"economic_impact_form_{st.session_state['form_key']}"):
         required_fields = {
             'project_name': ('Project Name', project_name),
             'property_address': ('Property Address', property_address),
-            'building_size': ('Building Size', building_size),
-            'building_bay_size': ('Building/Bay/Space Size', building_bay_size),
+            'building_bay_size': ('Bay/Space Size', building_bay_size),
             'current_sf': ('Current SF', current_sf),
             'proposed_use': ('Proposed Use', proposed_use),
             'proposed_use_sf': ('Proposed Use SF', proposed_use_sf),
-            'total_development_costs': ('Total Development Costs', total_development_costs),
-            'hard_costs': ('Hard Costs', hard_costs),
             'occupancy': ('Occupancy', occupancy),
             'funding_request': ('Funding Request', funding_request)
         }
@@ -449,6 +455,10 @@ with st.form(f"economic_impact_form_{st.session_state['form_key']}"):
         for field_key, (field_name, value) in required_fields.items():
             if value is None or value == '' or (isinstance(value, (int, float)) and value <= 0):
                 missing_fields.append(field_name)
+        
+        # Check that at least one cost field is provided
+        if not total_development_costs and not hard_costs:
+            missing_fields.append('Total Development Costs or Hard Costs (at least one required)')
         
         if full_time_jobs < 0:
             missing_fields.append("Full Time Jobs (must be 0 or greater)")
@@ -463,6 +473,7 @@ with st.form(f"economic_impact_form_{st.session_state['form_key']}"):
                 'property_address': property_address,
                 'building_size': building_size,
                 'current_taxable_value': current_taxable_value,
+                'current_use': current_use,
                 'parcel_size': parcel_size,
                 'building_bay_size': building_bay_size,
                 'current_sf': current_sf,
