@@ -120,21 +120,21 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# Add logo at the top
-try:
-    from PIL import Image
-    logo = Image.open("SE Logo.png")
-    
-    # Create columns to center the logo
-    col1, col2, col3 = st.columns([1, 2, 1])
-    with col2:
-        st.image(logo, use_column_width=True)
-except Exception as e:
-    # If logo fails to load, skip it
-    pass
+# Add logo and header aligned
+logo_col, header_col = st.columns([1, 9])
 
-# Main title and subtitle
-st.markdown('<div class="main-header">Economic Impact Analysis Tool</div>', unsafe_allow_html=True)
+with logo_col:
+    try:
+        from PIL import Image
+        logo = Image.open("SE Logo.png")
+        st.image(logo, width=80)
+    except Exception as e:
+        # If logo fails to load, skip it
+        pass
+
+with header_col:
+    st.markdown('<div class="main-header">Economic Impact Analysis Tool</div>', unsafe_allow_html=True)
+
 st.markdown('<div class="sub-header">Street Economics - Homestead CRA Edition</div>', unsafe_allow_html=True)
 
 st.info("Complete the form below to generate your economic impact report")
