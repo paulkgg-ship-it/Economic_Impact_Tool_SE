@@ -1,0 +1,97 @@
+Make these final adjustments to the form:
+
+1. MAKE ALL FIELDS OPTIONAL EXCEPT PROPOSED USE:
+   - Update form validation to only require: proposed_use
+   - Remove asterisks (*) from all other field labels
+   - Remove all other fields from the required_fields validation check
+   - Only check that proposed_use is not empty
+   
+   Update validation logic to:
+```python
+   if submitted:
+       # Only validate proposed_use
+       if not proposed_use or proposed_use.strip() == '':
+           st.error("⚠️ Please enter the Proposed Use (required)")
+       else:
+           # Form is valid, proceed with generation
+           st.success("✅ Form validated successfully!")
+           # ... rest of submission logic
+```
+
+2. RENAME AND CONSOLIDATE FIELDS:
+   In the "Project Type & Use" section:
+   
+   - REMOVE the field: "Bay/Space Size (sf)"
+   - RENAME "Proposed Use SF" to "Proposed Use (Bay/Space Size) (sf)"
+   - Keep it as a number input
+   - Make it optional (no asterisk)
+   - Update help text to: "Square footage dedicated to the proposed use"
+   
+   The "Project Type & Use" section should now have only 3 fields:
+   1. Proposed Use (required - the only required field in entire form)
+   2. Proposed Use (Bay/Space Size) (sf) (optional)
+   3. Rent or Own Property (optional)
+   4. Purchase Price if Own ($) (optional, conditional)
+
+3. ADD STREET ECONOMICS LOGO:
+   At the very top of the app, before any other content, add:
+```python
+   # Add logo at the top
+   try:
+       from PIL import Image
+       logo = Image.open("SE Logo.png")
+       
+       # Create columns to center the logo
+       col1, col2, col3 = st.columns([1, 2, 1])
+       with col2:
+           st.image(logo, use_container_width=True)
+   except Exception as e:
+       # If logo fails to load, skip it
+       pass
+   
+   # Then show the main title
+   st.markdown('<div class="main-header">Economic Impact Analysis Tool</div>', unsafe_allow_html=True)
+   st.markdown('<div class="sub-header">Street Economics - Homestead CRA Edition</div>', unsafe_allow_html=True)
+```
+   
+   Also add to requirements.txt if not already there:
+Pillow
+
+4. UPDATE FORM DATA COLLECTION:
+   Since we renamed/removed fields, update the form_data dictionary:
+   
+   - Remove: building_space_size (this was Bay/Space Size)
+   - Rename: proposed_use_sf stays the same in the backend (just display name changed)
+   
+   The form_data collection stays mostly the same, just remove building_space_size reference.
+
+5. UPDATE FIELD LABELS (remove asterisks from optional fields):
+   Go through all sections and remove the asterisk (*) from every field EXCEPT:
+   - "Proposed Use" - keep the asterisk, this is the only required field
+   
+   All other fields should be labeled without asterisks since they're optional.
+
+After making these changes:
+- Test that logo displays at the top
+- Verify only "Proposed Use" is required (try submitting with just that filled)
+- Confirm "Proposed Use (Bay/Space Size) (sf)" appears correctly
+- Make sure validation only checks for proposed_use
+
+What This Will Look Like
+Before:
+Economic Impact Analysis Tool
+Street Economics - Homestead CRA Edition
+
+[Form starts]
+After:
+[STREET ECONOMICS LOGO - centered]
+
+Economic Impact Analysis Tool
+Street Economics - Homestead CRA Edition
+
+[Form starts]
+
+Project Type & Use
+- Proposed Use * (ONLY required field)
+- Proposed Use (Bay/Space Size) (sf)
+- Rent or Own Property

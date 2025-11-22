@@ -100,12 +100,42 @@ st.markdown("""
     div[data-testid="stNumberInput"] label:contains("*")::after {
         color: #c41e3a;
     }
+    
+    .main-header {
+        color: #1f4788;
+        font-size: 2.5rem;
+        font-weight: 700;
+        text-align: center;
+        margin-top: 1rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .sub-header {
+        color: #666;
+        font-size: 1.3rem;
+        text-align: center;
+        margin-bottom: 2rem;
+        font-weight: 400;
+    }
     </style>
 """, unsafe_allow_html=True)
 
-st.title("Economic Impact Analysis Tool")
+# Add logo at the top
+try:
+    from PIL import Image
+    logo = Image.open("SE Logo.png")
+    
+    # Create columns to center the logo
+    col1, col2, col3 = st.columns([1, 2, 1])
+    with col2:
+        st.image(logo, use_container_width=True)
+except Exception as e:
+    # If logo fails to load, skip it
+    pass
 
-st.markdown('<p class="subtitle">Street Economics - Homestead CRA Edition</p>', unsafe_allow_html=True)
+# Main title and subtitle
+st.markdown('<div class="main-header">Economic Impact Analysis Tool</div>', unsafe_allow_html=True)
+st.markdown('<div class="sub-header">Street Economics - Homestead CRA Edition</div>', unsafe_allow_html=True)
 
 st.info("Complete the form below to generate your economic impact report")
 
