@@ -128,7 +128,7 @@ try:
     # Create columns to center the logo
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
-        st.image(logo, use_container_width=True)
+        st.image(logo, use_column_width=True)
 except Exception as e:
     # If logo fails to load, skip it
     pass
@@ -176,14 +176,14 @@ with st.form(f"economic_impact_form_{st.session_state['form_key']}"):
         
         with col1:
             project_name = st.text_input(
-                "Project Name *",
+                "Project Name",
                 placeholder="e.g., Downtown Cafe",
                 help="Enter the business or project name",
                 key="project_name"
             )
             
             property_address = st.text_area(
-                "Property Address *",
+                "Property Address",
                 placeholder="e.g., 123 Main St, Homestead, FL",
                 help="Full street address",
                 height=60,
@@ -222,17 +222,8 @@ with st.form(f"economic_impact_form_{st.session_state['form_key']}"):
                 key="building_size"
             )
             
-            building_bay_size = st.number_input(
-                "Bay/Space Size (sf) *",
-                min_value=0,
-                value=int(building_size) if building_size > 0 else 0,
-                step=100,
-                help="Specific space being used",
-                key="building_bay_size"
-            )
-            
             current_sf = st.number_input(
-                "Current SF *",
+                "Current SF",
                 min_value=0,
                 value=int(building_size) if building_size > 0 else 0,
                 step=100,
@@ -255,21 +246,21 @@ with st.form(f"economic_impact_form_{st.session_state['form_key']}"):
             proposed_use = st.text_input(
                 "Proposed Use *",
                 placeholder="e.g., Restaurant, Retail Store, Office",
-                help="Type of business or use",
+                help="Type of business or use (REQUIRED)",
                 key="proposed_use"
             )
             
             proposed_use_sf = st.number_input(
-                "Proposed Use SF *",
+                "Proposed Use (Bay/Space Size) (sf)",
                 min_value=0,
                 step=100,
-                help="Square footage for proposed use",
+                help="Square footage dedicated to the proposed use",
                 key="proposed_use_sf"
             )
         
         with col4:
             rent_or_own = st.selectbox(
-                "Rent or Own Property *",
+                "Rent or Own Property",
                 options=["Rent", "Own"],
                 index=0,
                 key="rent_or_own"
@@ -288,7 +279,7 @@ with st.form(f"economic_impact_form_{st.session_state['form_key']}"):
         
         with col5:
             renovation = st.radio(
-                "Renovation *",
+                "Renovation",
                 options=["yes", "no"],
                 index=0,
                 horizontal=True,
@@ -296,7 +287,7 @@ with st.form(f"economic_impact_form_{st.session_state['form_key']}"):
             )
             
             expansion = st.radio(
-                "Expansion *",
+                "Expansion",
                 options=["yes", "no"],
                 index=1,
                 horizontal=True,
@@ -380,7 +371,7 @@ with st.form(f"economic_impact_form_{st.session_state['form_key']}"):
         
         with col7:
             full_time_jobs = st.number_input(
-                "Full Time Jobs *",
+                "Full Time Jobs",
                 step=1,
                 help="Enter 0 if unknown. The model will estimate based on project size.",
                 key="full_time_jobs"
@@ -406,7 +397,7 @@ with st.form(f"economic_impact_form_{st.session_state['form_key']}"):
             )
             
             occupancy = st.number_input(
-                "Occupancy (# of people) *",
+                "Occupancy (# of people)",
                 min_value=1,
                 value=20,
                 step=1,
@@ -458,7 +449,7 @@ with st.form(f"economic_impact_form_{st.session_state['form_key']}"):
     
     with st.expander("Funding Request", expanded=True):
         funding_request = st.number_input(
-            "Funding Request ($) *",
+            "Funding Request ($)",
             min_value=0,
             step=1000,
             help="Amount of CRA funding requested for this project",
@@ -470,34 +461,12 @@ with st.form(f"economic_impact_form_{st.session_state['form_key']}"):
     submitted = st.form_submit_button("Generate Report", use_container_width=True)
     
     if submitted:
-        required_fields = {
-            'project_name': ('Project Name', project_name),
-            'property_address': ('Property Address', property_address),
-            'building_bay_size': ('Bay/Space Size', building_bay_size),
-            'current_sf': ('Current SF', current_sf),
-            'proposed_use': ('Proposed Use', proposed_use),
-            'proposed_use_sf': ('Proposed Use SF', proposed_use_sf),
-            'occupancy': ('Occupancy', occupancy),
-            'funding_request': ('Funding Request', funding_request)
-        }
-        
-        missing_fields = []
-        for field_key, (field_name, value) in required_fields.items():
-            if value is None or value == '' or (isinstance(value, (int, float)) and value <= 0):
-                missing_fields.append(field_name)
-        
-        # Check that at least one cost field is provided
-        if not total_development_costs and not hard_costs:
-            missing_fields.append('Total Development Costs or Hard Costs (at least one required)')
-        
-        if full_time_jobs < 0:
-            missing_fields.append("Full Time Jobs (must be 0 or greater)")
-        
-        if missing_fields:
-            st.error("⚠️ Please fill in all required fields:")
-            for field in missing_fields:
-                st.write(f"  • {field}")
+        # Only validate proposed_use
+        if not proposed_use or proposed_use.strip() == '':
+            st.error("⚠️ Please enter the Proposed Use (required)")
         else:
+            # Form is valid, proceed with generation
+            st.success("✅ Form validated successfully!")
             st.session_state['form_data'].update({
                 'project_name': project_name,
                 'property_address': property_address,
@@ -505,7 +474,6 @@ with st.form(f"economic_impact_form_{st.session_state['form_key']}"):
                 'current_taxable_value': current_taxable_value,
                 'current_use': current_use,
                 'parcel_size': parcel_size,
-                'building_bay_size': building_bay_size,
                 'current_sf': current_sf,
                 'additional_notes': additional_notes,
                 'proposed_use': proposed_use,
@@ -533,8 +501,6 @@ with st.form(f"economic_impact_form_{st.session_state['form_key']}"):
                 'funding_request': funding_request
             })
             st.session_state['form_complete'] = True
-            
-            st.success("✅ Form validated successfully!")
             
             # Call Stack.ai to generate report
             with st.spinner('🔄 Generating your economic impact report... This may take 30-60 seconds.'):
