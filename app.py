@@ -190,14 +190,6 @@ with st.form(f"economic_impact_form_{st.session_state['form_key']}"):
                 key="property_address"
             )
             
-            current_taxable_value = st.number_input(
-                "Current Taxable Value ($)",
-                min_value=0,
-                step=1000,
-                help="Optional - current assessed value",
-                key="current_taxable_value"
-            )
-            
             current_use = st.text_input(
                 "Current Use",
                 placeholder="e.g., Vacant, Office, Warehouse",
@@ -206,6 +198,14 @@ with st.form(f"economic_impact_form_{st.session_state['form_key']}"):
             )
         
         with col2:
+            current_taxable_value = st.number_input(
+                "Current Taxable Value ($)",
+                min_value=0,
+                step=1000,
+                help="Optional - current assessed value",
+                key="current_taxable_value"
+            )
+            
             parcel_size = st.number_input(
                 "Parcel (Lot) Size (sf)",
                 min_value=0,
