@@ -19,7 +19,12 @@ The application is a Streamlit web application built with Python 3.11.
 
 **Technical Implementations:**
 - **Form Structure**: 5 expandable sections (Project Description, Project Type & Use, Project Costs, Operations, Funding Request), all expanded by default.
-- **Data Handling**: Session state framework for storing form data, comprehensive form validation with clear error messages, JSON import/export functionality for analysis data.
+- **Data Handling**: Session state framework for storing form data, streamlined form validation (only Proposed Use required + data quality checks), JSON import/export functionality for analysis data.
+- **Validation Rules**: 
+  - Required: Only "Proposed Use" field
+  - Data Quality: At least one of Total Development Costs or Hard Costs must be > 0
+  - Data Quality: Full Time Jobs cannot be negative (can be 0 for AI estimation)
+  - Empty project names fallback to "Economic Impact Analysis" in reports
 - **Cost Validation**: Intelligent cost validation and tracking, including real-time cost breakdown calculation and warnings for discrepancies.
 - **Metrics**: Enhanced Key Metrics Summary dashboard with 8 calculated metrics (e.g., Total Jobs, Total Investment, Cost per SF, Funding Request ratio).
 - **Reporting**: Professional report display with structured sections in logical order, download capabilities for reports (PDF with fallback to text) and analysis data (JSON).
@@ -35,11 +40,12 @@ The application is a Streamlit web application built with Python 3.11.
 - **Documents**: Project documents uploader supporting various file types (PDF, PNG, JPG, JPEG, DOC, DOCX, XLSX).
 
 **Feature Specifications:**
-- **Project Description**: Captures project name*, address*, current taxable value, current use (new field), parcel size, building size, bay/space size*, and current SF*. Fields reorganized for better workflow. (*required fields)
-- **Project Type & Use**: Records proposed use, proposed use SF, rent/own status, and purchase price.
-- **Project Costs**: Details renovation, expansion, total development costs, hard costs, soft costs, financing costs, FF&E costs, and construction duration. Requires EITHER Total Development Costs OR Hard Costs (at least one must be entered).
-- **Operations**: Collects full-time/part-time jobs (allows 0 with auto-estimation), average wage, occupancy, restaurant tables, annual operating revenue/expenses, and annual/per SF rent. Includes smart rent calculation in results.
-- **Funding Request**: Captures the requested CRA funding amount.
+- **Branding**: Street Economics logo displayed at top of page (centered, above main header)
+- **Project Description**: Captures project name, address, current taxable value, current use, parcel size, building size, and current SF. All fields optional.
+- **Project Type & Use**: Records proposed use* (REQUIRED - only required field in entire form), proposed use (bay/space size) SF, rent/own status, and purchase price. All fields except proposed use are optional.
+- **Project Costs**: Details renovation, expansion, total development costs, hard costs, soft costs, financing costs, FF&E costs, and construction duration. All fields optional, but at least one of Total Development Costs OR Hard Costs must be > 0 for meaningful analysis.
+- **Operations**: Collects full-time/part-time jobs (allows 0 with auto-estimation), average wage, occupancy (optional, can be 0), restaurant tables, annual operating revenue/expenses, and annual/per SF rent. All fields optional. Includes smart rent calculation in results.
+- **Funding Request**: Captures the requested CRA funding amount (optional).
 
 **System Design Choices:**
 - **File Structure**: Organized into `app.py` (main application), `stack_client.py` (Stack.ai integration), `economic_calculator.py` (calculation engine), and `.streamlit/config.toml`.

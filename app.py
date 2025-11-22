@@ -398,10 +398,10 @@ with st.form(f"economic_impact_form_{st.session_state['form_key']}"):
             
             occupancy = st.number_input(
                 "Occupancy (# of people)",
-                min_value=1,
+                min_value=0,
                 value=20,
                 step=1,
-                help="Maximum occupancy capacity",
+                help="Maximum occupancy capacity (optional - use 0 to skip)",
                 key="occupancy"
             )
         
@@ -461,9 +461,26 @@ with st.form(f"economic_impact_form_{st.session_state['form_key']}"):
     submitted = st.form_submit_button("Generate Report", use_container_width=True)
     
     if submitted:
-        # Only validate proposed_use
+        # Validate required field and basic data quality
+        validation_errors = []
+        
+        # Required: Proposed Use
         if not proposed_use or proposed_use.strip() == '':
-            st.error("⚠️ Please enter the Proposed Use (required)")
+            validation_errors.append("Proposed Use (required)")
+        
+        # Data quality checks (optional fields, but if filled, must be valid)
+        # At least one cost field should be provided for meaningful analysis
+        if total_development_costs <= 0 and hard_costs <= 0:
+            validation_errors.append("At least one of Total Development Costs or Hard Costs must be greater than 0")
+        
+        # Jobs can be 0 (for estimation), but not negative
+        if full_time_jobs < 0:
+            validation_errors.append("Full Time Jobs cannot be negative")
+        
+        if validation_errors:
+            st.error("⚠️ Please address the following issues:")
+            for error in validation_errors:
+                st.write(f"  • {error}")
         else:
             # Form is valid, proceed with generation
             st.success("✅ Form validated successfully!")
@@ -539,7 +556,8 @@ with st.form(f"economic_impact_form_{st.session_state['form_key']}"):
 if st.session_state.get('report_generated', False):
     st.markdown("---")
     st.markdown("## Economic Impact Report")
-    st.markdown(f"### {st.session_state.form_data['project_name']}")
+    project_name_display = st.session_state.form_data.get('project_name', '').strip() or "Economic Impact Analysis"
+    st.markdown(f"### {project_name_display}")
     
     # Check if we have JSON data
     if st.session_state.get('report_json'):
