@@ -171,7 +171,7 @@ with st.form(f"economic_impact_form_{st.session_state['form_key']}"):
     
     st.markdown("---")
     
-    with st.expander("Project Description", expanded=True):
+    with st.expander("Property Description", expanded=True):
         col1, col2 = st.columns(2)
         
         with col1:
@@ -221,23 +221,6 @@ with st.form(f"economic_impact_form_{st.session_state['form_key']}"):
                 help="Optional - total building square footage",
                 key="building_size"
             )
-            
-            current_sf = st.number_input(
-                "Current SF",
-                min_value=0,
-                value=int(building_size) if building_size > 0 else 0,
-                step=100,
-                help="Current square footage in use",
-                key="current_sf"
-            )
-        
-        additional_notes = st.text_area(
-            "Additional Notes/Description",
-            placeholder="Add any additional details about the project...",
-            help="Optional - provide context, background, or special circumstances",
-            height=90,
-            key="additional_notes"
-        )
     
     with st.expander("Project Type & Use", expanded=True):
         col3, col4 = st.columns(2)
@@ -273,6 +256,14 @@ with st.form(f"economic_impact_form_{st.session_state['form_key']}"):
                 help="Leave at 0 if renting",
                 key="purchase_price"
             )
+        
+        additional_notes = st.text_area(
+            "Additional Notes/Description",
+            placeholder="Add any additional details about the project...",
+            help="Optional - provide context, background, or special circumstances",
+            height=90,
+            key="additional_notes"
+        )
     
     with st.expander("Project Costs", expanded=True):
         col5, col6 = st.columns(2)
@@ -367,41 +358,40 @@ with st.form(f"economic_impact_form_{st.session_state['form_key']}"):
             st.warning(f"⚠️ Hard Costs (${hard_costs:,.0f}) exceed Total Development Costs (${total_development_costs:,.0f})")
     
     with st.expander("Operations", expanded=True):
+        st.caption("If you don't know some items, enter 0 and we will estimate based on industry and local standards.")
+        
         col7, col8 = st.columns(2)
         
         with col7:
             full_time_jobs = st.number_input(
                 "Full Time Jobs",
+                min_value=0,
+                value=0,
                 step=1,
-                help="Enter 0 if unknown. The model will estimate based on project size.",
                 key="full_time_jobs"
             )
-            
-            if full_time_jobs == 0:
-                st.info("ℹ️ If you don't know job count, enter 0 and we'll estimate based on industry standards")
             
             part_time_jobs = st.number_input(
                 "Part Time Jobs",
                 min_value=0,
+                value=0,
                 step=1,
-                help="Number of part-time positions",
                 key="part_time_jobs"
             )
             
             average_wage = st.number_input(
                 "Average Wage ($)",
                 min_value=0,
+                value=0,
                 step=1000,
-                help="Average annual wage per employee",
                 key="average_wage"
             )
             
             occupancy = st.number_input(
                 "Occupancy (# of people)",
                 min_value=0,
-                value=20,
+                value=0,
                 step=1,
-                help="Maximum occupancy capacity (optional - use 0 to skip)",
                 key="occupancy"
             )
         
@@ -491,7 +481,6 @@ with st.form(f"economic_impact_form_{st.session_state['form_key']}"):
                 'current_taxable_value': current_taxable_value,
                 'current_use': current_use,
                 'parcel_size': parcel_size,
-                'current_sf': current_sf,
                 'additional_notes': additional_notes,
                 'proposed_use': proposed_use,
                 'proposed_use_sf': proposed_use_sf,
@@ -519,8 +508,11 @@ with st.form(f"economic_impact_form_{st.session_state['form_key']}"):
             })
             st.session_state['form_complete'] = True
             
-            # Call Stack.ai to generate report
-            with st.spinner('🔄 Generating your economic impact report... This may take 30-60 seconds.'):
+            # Call Stack.ai to generate report with enhanced loading indicator
+            progress_placeholder = st.empty()
+            progress_placeholder.info("🔄 **Analyzing your project data...** Please wait while we generate your economic impact report.")
+            
+            with st.spinner('Generating report... This may take 30-60 seconds.'):
                 from stack_client import get_stack_client
                 import traceback
                 
