@@ -339,23 +339,6 @@ with st.form(f"economic_impact_form_{st.session_state['form_key']}"):
                 step=1,
                 key="construction_duration"
             )
-        
-        costs_sum = hard_costs + soft_costs + financing_costs + ffe_costs
-        
-        st.info(f"💡 **Cost Breakdown:** Soft Costs + Hard Costs + Financing + FF&E = ${costs_sum:,.0f}")
-        
-        if total_development_costs > 0:
-            if costs_sum == total_development_costs:
-                st.success(f"✅ Cost breakdown matches Total Development Costs (${total_development_costs:,.0f})")
-            else:
-                difference = total_development_costs - costs_sum
-                if difference > 0:
-                    st.warning(f"⚠️ Cost breakdown is ${abs(difference):,.0f} less than Total Development Costs")
-                else:
-                    st.warning(f"⚠️ Cost breakdown is ${abs(difference):,.0f} more than Total Development Costs")
-        
-        if hard_costs > total_development_costs and total_development_costs > 0:
-            st.warning(f"⚠️ Hard Costs (${hard_costs:,.0f}) exceed Total Development Costs (${total_development_costs:,.0f})")
     
     with st.expander("Operations", expanded=True):
         st.caption("If you don't know some items, enter 0 and we will estimate based on industry and local standards.")
