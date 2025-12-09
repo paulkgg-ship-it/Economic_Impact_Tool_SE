@@ -35,12 +35,29 @@ class StackAIClient:
         """
         Sends form data to Stack.ai and returns the economic impact report
         """
-        # Prepare the payload
+        # Get condensed context from data processor (includes fiscal_parameters, multipliers, etc.)
+        from data_processor import data_processor
+        llm_context = data_processor.prepare_llm_context(form_data)
+
+        # DEBUG: Log what we're sending
+        print("=" * 60)
+        print("CONTEXT BEING SENT TO STACK.AI:")
+        print(json.dumps(llm_context, indent=2)[:2000])
+        print("=" * 60)
+
+        # Check if fiscal_parameters exists
+        if 'fiscal_parameters' in llm_context:
+            print("✓ fiscal_parameters IS included")
+            print(f"  City Millage: {llm_context['fiscal_parameters'].get('city_millage')}")
+            print(f"  County Millage: {llm_context['fiscal_parameters'].get('county_millage')}")
+        else:
+            print("✗ fiscal_parameters is MISSING!")
+        print("=" * 60)
+
+        # Prepare the payload with enriched context
         payload = {
-            "in-0":
-            json.dumps(form_data),  # Send all form data as JSON string
-            "user_id":
-            f"economic-impact-{form_data.get('project_name', 'unknown')}"
+            "in-0": json.dumps(llm_context),
+            "user_id": f"economic-impact-{form_data.get('project_name', 'unknown')}"
         }
 
         headers = {
