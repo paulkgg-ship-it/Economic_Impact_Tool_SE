@@ -3,6 +3,8 @@ from dotenv import load_dotenv
 from economic_calculator import calculate_economic_impact
 import plotly.graph_objects as go
 import plotly.express as px
+import os
+import sys
 
 load_dotenv()
 
@@ -11,6 +13,56 @@ st.set_page_config(
     page_icon="📊",
     layout="wide"
 )
+
+# ===== DIAGNOSTIC MODE FOR STREAMLIT CLOUD =====
+# Check if we're on Streamlit Cloud (no Replit env vars)
+is_streamlit_cloud = 'REPL_ID' not in os.environ
+
+if is_streamlit_cloud:
+    try:
+        # Check secrets - Streamlit Cloud uses st.secrets
+        api_key = st.secrets.get("STACK_AI_API_KEY") if hasattr(st, 'secrets') else os.environ.get("STACK_AI_API_KEY")
+        flow_id = st.secrets.get("STACK_AI_FLOW_ID") if hasattr(st, 'secrets') else os.environ.get("STACK_AI_FLOW_ID")
+        
+        if not api_key:
+            st.error("❌ Missing STACK_AI_API_KEY in secrets")
+            st.info("Add secrets in Streamlit Cloud: Settings → Secrets")
+            st.stop()
+        
+        if not flow_id:
+            st.error("❌ Missing STACK_AI_FLOW_ID in secrets")
+            st.info("Add secrets in Streamlit Cloud: Settings → Secrets")
+            st.stop()
+        
+        # Set environment variables from secrets for compatibility
+        os.environ["STACK_AI_API_KEY"] = api_key
+        os.environ["STACK_AI_FLOW_ID"] = flow_id
+        
+        st.write("✓ Secrets loaded")
+        
+        from data_processor import data_processor
+        st.write("✓ data_processor imported")
+        
+        from stack_client import StackAIClient
+        st.write("✓ stack_client imported")
+        
+        from PIL import Image
+        try:
+            logo = Image.open("SE Logo.png")
+            st.write("✓ Logo loaded")
+        except FileNotFoundError:
+            st.warning("⚠️ SE Logo.png not found - continuing without logo")
+        
+        st.success("✅ All checks passed - app should work")
+        
+    except Exception as e:
+        st.error(f"❌ Startup error: {str(e)}")
+        st.code(f"Error type: {type(e).__name__}")
+        import traceback
+        st.code(traceback.format_exc())
+        st.stop()
+
+# ===== END DIAGNOSTIC MODE =====
 
 st.markdown("""
     <style>
