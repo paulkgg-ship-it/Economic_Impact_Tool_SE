@@ -730,67 +730,58 @@ This methodology is consistent with standard economic development impact analysi
         st.markdown("---")
         
         # ===== ACTION BUTTONS =====
-        col1, col2, col3 = st.columns(3)
+        col1, col2 = st.columns(2)
         
         with col1:
-            # Try to generate PDF, fallback to text if it fails
+            # Primary: PDF Download
             report_content = st.session_state.get('report_text', '')
-            
-            # Try PDF generation first
-            pdf_available = False
-            pdf_data = None
+            project_name = st.session_state.form_data.get('project_name', 'Economic_Impact_Analysis')
             
             try:
                 from pdf_generator import generate_pdf_from_markdown
-                pdf_data = generate_pdf_from_markdown(
+                
+                pdf_bytes = generate_pdf_from_markdown(
                     report_content,
-                    title=f"Economic Impact Report - {st.session_state.form_data['project_name']}"
+                    title=f"Economic Impact Report - {project_name}"
                 )
-                pdf_available = True
-            except Exception as e:
-                # Log error for debugging
-                print(f"PDF generation failed: {str(e)}")
-                import traceback
-                print(traceback.format_exc())
-                pdf_available = False
-            
-            # Show appropriate download button
-            if pdf_available and pdf_data:
+                
                 st.download_button(
                     label="Download Report (PDF)",
-                    data=pdf_data,
-                    file_name=f"economic_impact_{st.session_state.form_data['project_name'].replace(' ', '_')}.pdf",
+                    data=pdf_bytes,
+                    file_name=f"economic_impact_{project_name.replace(' ', '_')}.pdf",
                     mime="application/pdf",
-                    use_container_width=True
-                )
-            else:
-                st.download_button(
-                    label="Download Report (Text)",
-                    data=report_content,
-                    file_name=f"economic_impact_{st.session_state.form_data['project_name'].replace(' ', '_')}.txt",
-                    mime="text/plain",
                     use_container_width=True,
-                    help="PDF format currently unavailable"
+                    type="primary"
+                )
+            except Exception as e:
+                st.error(f"PDF generation failed: {str(e)}")
+                # Fallback to markdown
+                st.download_button(
+                    label="Download Report (Markdown)",
+                    data=report_content,
+                    file_name=f"economic_impact_{project_name.replace(' ', '_')}.md",
+                    mime="text/markdown",
+                    use_container_width=True
                 )
         
         with col2:
-            # Download JSON data
-            import json
-            st.download_button(
-                label="Download Analysis Data (JSON)",
-                data=json.dumps(report_data, indent=2),
-                file_name=f"analysis_data_{st.session_state.form_data['project_name'].replace(' ', '_')}.json",
-                mime="application/json",
-                use_container_width=True
-            )
-        
-        with col3:
-            # Generate new report
+            # Generate new report button
             if st.button("Generate New Report", use_container_width=True):
                 st.session_state.report_generated = False
                 st.session_state.report_text = None
                 st.session_state.report_json = None
                 st.rerun()
+        
+        # Advanced options (JSON download) - hidden in expander
+        with st.expander("Advanced Options"):
+            import json
+            st.download_button(
+                label="Download Raw Data (JSON)",
+                data=json.dumps(report_data, indent=2),
+                file_name=f"analysis_data_{st.session_state.form_data.get('project_name', 'report').replace(' ', '_')}.json",
+                mime="application/json",
+                use_container_width=True
+            )
     
     else:
         # Fallback if no JSON (show raw text)

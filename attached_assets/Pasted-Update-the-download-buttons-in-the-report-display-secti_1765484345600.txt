@@ -1,0 +1,68 @@
+Update the download buttons in the report display section:
+
+1. REMOVE the "Download Report (Text)" button completely
+
+2. KEEP the "Download Analysis Data (JSON)" button but HIDE it in an expander:
+   - Move it inside a st.expander("Advanced Options")
+   - This keeps it available but not prominent
+
+3. ADD/FIX the PDF download button as the PRIMARY download:
+
+Replace the current download buttons section with:
+```python
+# ===== ACTION BUTTONS =====
+col1, col2 = st.columns(2)
+
+with col1:
+    # Primary: PDF Download
+    if report_data.get('full_report_markdown'):
+        try:
+            from pdf_generator import generate_pdf_from_markdown
+            
+            pdf_bytes = generate_pdf_from_markdown(
+                report_data['full_report_markdown'],
+                title=f"Economic Impact Report - {st.session_state.form_data['project_name']}"
+            )
+            
+            st.download_button(
+                label="📥 Download Report (PDF)",
+                data=pdf_bytes,
+                file_name=f"economic_impact_{st.session_state.form_data['project_name'].replace(' ', '_')}.pdf",
+                mime="application/pdf",
+                use_container_width=True,
+                type="primary"
+            )
+        except Exception as e:
+            st.error(f"PDF generation failed: {str(e)}")
+            # Fallback to markdown
+            st.download_button(
+                label="📥 Download Report (Markdown)",
+                data=report_data['full_report_markdown'],
+                file_name=f"economic_impact_{st.session_state.form_data['project_name'].replace(' ', '_')}.md",
+                mime="text/markdown",
+                use_container_width=True
+            )
+
+with col2:
+    # Generate new report button
+    if st.button("🔄 Generate New Report", use_container_width=True):
+        st.session_state.report_generated = False
+        st.session_state.report_text = None
+        st.session_state.report_json = None
+        st.rerun()
+
+# Advanced options (JSON download) - hidden in expander
+with st.expander("🔧 Advanced Options"):
+    st.download_button(
+        label="Download Raw Data (JSON)",
+        data=json.dumps(report_data, indent=2),
+        file_name=f"analysis_data_{st.session_state.form_data['project_name'].replace(' ', '_')}.json",
+        mime="application/json",
+        use_container_width=True
+    )
+```
+
+This gives users:
+- One prominent PDF download button
+- A "Generate New Report" button
+- JSON download hidden in "Advanced Options" for power users
