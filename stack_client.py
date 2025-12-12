@@ -67,12 +67,14 @@ class StackAIClient:
 
         try:
             # Make the API call with org_id and flow_id
+            print("Making request to Stack.ai...")
             response = requests.post(
                 f"{self.base_url}/{self.org_id}/{self.flow_id}",
                 headers=headers,
                 json=payload,
-                timeout=120  # 2 minute timeout for LLM processing
+                timeout=180  # 3 minute timeout for LLM processing
             )
+            print(f"Response received: status {response.status_code}")
 
             response.raise_for_status()
 
