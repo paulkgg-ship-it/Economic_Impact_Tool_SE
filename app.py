@@ -286,7 +286,7 @@ with st.form(f"economic_impact_form_{st.session_state['form_key']}"):
             )
             
             proposed_use_sf = st.number_input(
-                "Proposed Use (Bay/Space Size) (sf)",
+                "Size of Proposed Use (Bay/Space) (sf)",
                 min_value=0,
                 step=100,
                 help="Square footage dedicated to the proposed use",
@@ -432,7 +432,7 @@ with st.form(f"economic_impact_form_{st.session_state['form_key']}"):
         
         with col8:
             num_tables = st.number_input(
-                "# of tables (for restaurants)",
+                "# of Tables (for restaurants)",
                 min_value=0,
                 step=1,
                 help="Leave blank if not a restaurant",
