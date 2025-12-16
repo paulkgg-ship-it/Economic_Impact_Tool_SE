@@ -791,6 +791,7 @@ This methodology is consistent with standard economic development impact analysi
             
             try:
                 from pdf_generator import generate_pdf_from_markdown
+                import traceback
                 
                 pdf_bytes = generate_pdf_from_markdown(
                     report_content,
@@ -806,7 +807,13 @@ This methodology is consistent with standard economic development impact analysi
                     type="primary"
                 )
             except Exception as e:
+                import traceback
                 st.error(f"PDF generation failed: {str(e)}")
+                
+                # Show full traceback for debugging
+                with st.expander("Error Details"):
+                    st.code(traceback.format_exc())
+                
                 # Fallback to markdown
                 st.download_button(
                     label="Download Report (Markdown)",
