@@ -786,15 +786,57 @@ This methodology is consistent with standard economic development impact analysi
         
         with col1:
             # Primary: PDF Download
-            report_content = st.session_state.get('report_text', '')
             project_name = st.session_state.form_data.get('project_name', 'Economic_Impact_Analysis')
+            
+            # Build markdown report from structured JSON data
+            markdown_report = f"# Economic Impact Report\n## {project_name}\n\n"
+            
+            # Executive Summary
+            markdown_report += "## Executive Summary\n"
+            markdown_report += report_data.get('executive_summary', '') + "\n\n"
+            
+            # Fiscal Impact
+            fiscal = report_data.get('fiscal_highlights', {})
+            markdown_report += "## Fiscal Impact: CRA Tax Increment\n"
+            markdown_report += f"- **Year 1 CRA Revenue:** ${fiscal.get('year_1_cra_revenue', 0):,.0f}\n"
+            markdown_report += f"- **10-Year Cumulative:** ${fiscal.get('ten_year_cumulative', 0):,.0f}\n\n"
+            
+            # Construction Impact
+            construction = report_data.get('construction_impact', {})
+            markdown_report += "## Construction Phase (One-Time)\n"
+            if construction.get('table'):
+                markdown_report += "| Impact Type | Output | Jobs | Labor Income |\n"
+                markdown_report += "|-------------|--------|------|-------------|\n"
+                for row in construction.get('table', []):
+                    markdown_report += f"| {row.get('impact_type', '')} | ${row.get('output', 0):,.0f} | {row.get('jobs', 0):.1f} | ${row.get('labor_income', 0):,.0f} |\n"
+            markdown_report += "\n"
+            
+            # Operations Impact
+            operations = report_data.get('operations_impact', {})
+            markdown_report += "## Operations Phase (Recurring Annual)\n"
+            if operations.get('table'):
+                markdown_report += "| Impact Type | Output | Jobs | Labor Income |\n"
+                markdown_report += "|-------------|--------|------|-------------|\n"
+                for row in operations.get('table', []):
+                    markdown_report += f"| {row.get('impact_type', '')} | ${row.get('output', 0):,.0f} | {row.get('jobs', 0):.1f} | ${row.get('labor_income', 0):,.0f} |\n"
+            markdown_report += "\n"
+            
+            # Community Impacts
+            markdown_report += "## Community and Qualitative Impacts\n"
+            for impact in report_data.get('community_impacts', []):
+                markdown_report += f"**{impact.get('category', '')}**: {impact.get('description', '')}\n\n"
+            
+            # Sources & Methodology
+            markdown_report += "## Sources & Methodology\n"
+            markdown_report += "This analysis uses economic modeling based on the EMSI Type II methodology.\n"
+            markdown_report += "Data sources include: Lightcast 2025, Esri 2025, CoStar 2025, and City/County FY 2025 millage rates.\n\n"
             
             try:
                 from pdf_generator import generate_pdf_from_markdown
                 import traceback
                 
                 pdf_bytes = generate_pdf_from_markdown(
-                    report_content,
+                    markdown_report,
                     title=f"Economic Impact Report - {project_name}"
                 )
                 
@@ -817,7 +859,7 @@ This methodology is consistent with standard economic development impact analysi
                 # Fallback to markdown
                 st.download_button(
                     label="Download Report (Markdown)",
-                    data=report_content,
+                    data=markdown_report,
                     file_name=f"economic_impact_{project_name.replace(' ', '_')}.md",
                     mime="text/markdown",
                     use_container_width=True
