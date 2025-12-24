@@ -80,10 +80,13 @@ class StackAIClient:
 
             # Parse response
             result = response.json()
+            print(f"Full API response keys: {result.keys()}")
 
             # Extract the output - Stack.ai returns outputs in 'outputs' dict
             outputs = result.get('outputs', {})
+            print(f"Outputs keys: {outputs.keys() if outputs else 'No outputs'}")
             output_text = outputs.get('out-0', '')
+            print(f"Output text length: {len(output_text) if output_text else 0}")
 
             # If output is JSON, try to parse and format it
             report_json = None

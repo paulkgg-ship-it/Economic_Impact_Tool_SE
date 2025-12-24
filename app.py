@@ -563,12 +563,20 @@ with st.form(f"economic_impact_form_{st.session_state['form_key']}"):
                         result = stack_client.run_analysis(st.session_state['form_data'])
                         
                         if result['success']:
-                            st.session_state['report_generated'] = True
-                            st.session_state['report_text'] = result['report']
-                            st.session_state['report_json'] = result.get('report_json')  # Store structured JSON
-                            st.session_state['api_error'] = None
-                            st.success("✅ Report generated successfully!")
-                            st.rerun()
+                            report_json = result.get('report_json')
+                            
+                            if report_json:
+                                st.session_state['report_generated'] = True
+                                st.session_state['report_text'] = result['report']
+                                st.session_state['report_json'] = report_json
+                                st.session_state['api_error'] = None
+                                st.success("✅ Report generated successfully!")
+                                st.rerun()
+                            else:
+                                # API succeeded but no JSON parsed - show raw response
+                                st.session_state['api_error'] = f"Report returned but could not parse JSON. Raw response: {result.get('report', '')[:500]}..."
+                                st.session_state['report_generated'] = False
+                                st.session_state['report_text'] = result.get('report', '')
                         else:
                             st.session_state['api_error'] = f"API Error: {result['error']}"
                             st.session_state['report_generated'] = False
