@@ -299,37 +299,62 @@ if st.session_state['geography'] is None:
     st.markdown("### Choose Your Analysis Region")
     st.markdown("Select the geographic scope for your economic impact analysis:")
     
-    # Geography cards in columns
+    # Geography cards in columns with inline styles and SVG icons
     col1, col2 = st.columns(2)
     
     with col1:
+        # Homestead CRA card with SVG building icon
         st.markdown("""
-        <div class="geo-card">
-            <div class="geo-card-icon">🏛️</div>
-            <div class="geo-card-title">Homestead CRA</div>
-            <div class="geo-card-description">
-                Comprehensive analysis with local multipliers, demographics, and millage rates for Homestead Community Redevelopment Agency
+        <div style="border: 2px solid #e0e0e0; border-radius: 12px; padding: 2rem; 
+                    background: white; box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+                    transition: all 0.3s ease; margin-bottom: 1rem;">
+            <div style="text-align: center; margin-bottom: 1rem;">
+                <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="#1f4788" stroke-width="1.5">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                    <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                </svg>
+            </div>
+            <div style="font-size: 1.5rem; font-weight: 600; color: #1f4788; 
+                        text-align: center; margin-bottom: 0.5rem;">Homestead CRA</div>
+            <div style="font-size: 1rem; color: #666; text-align: center; line-height: 1.5;">
+                Comprehensive analysis with local multipliers, demographics, and millage rates
             </div>
             <div style="text-align: center; margin-top: 1rem;">
-                <span class="geo-card-badge">📊 Full Fiscal Impact</span>
+                <span style="background: #e8f5e9; color: #2e7d32; padding: 0.25rem 0.75rem; 
+                             border-radius: 12px; font-size: 0.875rem; font-weight: 500;">
+                    Full Fiscal Impact
+                </span>
             </div>
         </div>
         """, unsafe_allow_html=True)
         
-        if st.button("Select Homestead CRA", key="btn_homestead", use_container_width=True):
+        if st.button("Select Homestead CRA", key="btn_homestead", use_container_width=True, type="primary"):
             st.session_state['geography'] = "homestead"
             st.rerun()
     
     with col2:
+        # Florida Statewide card with SVG globe icon
         st.markdown("""
-        <div class="geo-card">
-            <div class="geo-card-icon">🌴</div>
-            <div class="geo-card-title">Florida Statewide</div>
-            <div class="geo-card-description">
-                Economic impact analysis using Florida statewide multipliers. Ideal for preliminary assessments and MainStreet programs
+        <div style="border: 2px solid #e0e0e0; border-radius: 12px; padding: 2rem; 
+                    background: white; box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+                    transition: all 0.3s ease; margin-bottom: 1rem;">
+            <div style="text-align: center; margin-bottom: 1rem;">
+                <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="#1f4788" stroke-width="1.5">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="2" x2="12" y2="22"></line>
+                    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                </svg>
+            </div>
+            <div style="font-size: 1.5rem; font-weight: 600; color: #1f4788; 
+                        text-align: center; margin-bottom: 0.5rem;">Florida Statewide</div>
+            <div style="font-size: 1rem; color: #666; text-align: center; line-height: 1.5;">
+                Economic impact analysis using statewide multipliers for any Florida location
             </div>
             <div style="text-align: center; margin-top: 1rem;">
-                <span class="geo-card-badge" style="background: #fff3e0; color: #e65100;">💼 Economic Only</span>
+                <span style="background: #fff3e0; color: #e65100; padding: 0.25rem 0.75rem; 
+                             border-radius: 12px; font-size: 0.875rem; font-weight: 500;">
+                    Economic Only
+                </span>
             </div>
         </div>
         """, unsafe_allow_html=True)
@@ -344,45 +369,44 @@ if st.session_state['geography'] is None:
     col1, col2, col3 = st.columns(3)
     
     with col1:
-        st.markdown("#### 📈 Data Sources")
+        st.markdown("#### Data Sources")
         st.markdown("Lightcast multipliers, Esri demographics, CoStar real estate data")
     
     with col2:
-        st.markdown("#### ⚡ Fast Results")
+        st.markdown("#### Fast Results")
         st.markdown("Professional reports generated in 2-3 minutes")
     
     with col3:
-        st.markdown("#### 📄 Export Options")
+        st.markdown("#### Export Options")
         st.markdown("Download as formatted PDF for board presentations")
     
     st.stop()
 
 # FORM SCREEN (show after geography selected)
 geo_name = "Homestead CRA" if st.session_state['geography'] == "homestead" else "Florida Statewide"
-geo_icon = "🏛️" if st.session_state['geography'] == "homestead" else "🌴"
-geo_note = "Full fiscal and economic impact analysis" if st.session_state['geography'] == "homestead" else "Economic impact only - fiscal impacts require local millage rates"
 
-# Selected geography banner with change button
+# Clean header with change button aligned right
 col1, col2 = st.columns([4, 1])
 
 with col1:
-    st.markdown(f"""
-    <div class="selected-geo-banner">
-        <h3>{geo_icon} {geo_name}</h3>
-        <p>{geo_note}</p>
-    </div>
-    """, unsafe_allow_html=True)
+    st.markdown(f"### {geo_name}")
+    if st.session_state['geography'] == "florida_statewide":
+        st.caption("Economic impact only - fiscal impacts require local millage rates")
+    else:
+        st.caption("Full fiscal and economic impact analysis")
 
 with col2:
-    if st.button("Change Region", key="change_region", use_container_width=True):
+    if st.button("Change", key="change_region", help="Select a different region"):
         st.session_state['geography'] = None
         st.session_state['form_complete'] = False
         st.session_state['report_generated'] = False
         st.rerun()
 
+st.markdown("---")
+
 # Show warning for Florida Statewide about fiscal impacts
 if st.session_state['geography'] == "florida_statewide":
-    st.warning("⚠️ **Florida Statewide Note:** This analysis provides economic impacts (jobs, output, earnings) using Florida statewide multipliers. Fiscal impacts (tax increment, CRA revenue) require local jurisdiction millage rates and are not included in this analysis.")
+    st.warning("**Note:** This analysis provides economic impacts (jobs, output, earnings) using Florida statewide multipliers. Fiscal impacts (tax increment, CRA revenue) require local jurisdiction millage rates.")
 
 # Wrap form in constrained container
 st.markdown('<div class="form-container">', unsafe_allow_html=True)

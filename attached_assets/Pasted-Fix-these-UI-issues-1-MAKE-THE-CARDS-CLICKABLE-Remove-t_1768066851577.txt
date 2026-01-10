@@ -1,0 +1,134 @@
+Fix these UI issues:
+
+1. MAKE THE CARDS CLICKABLE:
+   - Remove the separate buttons below the cards
+   - Make the entire card clickable instead
+   - Add cursor: pointer to the cards
+   
+Update the geography selector code to:
+```python
+# Geography cards in columns
+col1, col2 = st.columns(2)
+
+with col1:
+    if st.button("homestead_card", key="btn_homestead", use_container_width=True, 
+                 label_visibility="hidden"):
+        st.session_state.geography = "homestead"
+        st.rerun()
+    
+    # Place the card HTML ABOVE the button using st.markdown with negative margin
+    st.markdown("""
+    <div class="geo-card" style="margin-top: -70px; pointer-events: none;">
+        <div class="geo-card-icon">🏛️</div>
+        <div class="geo-card-title">Homestead CRA</div>
+        <div class="geo-card-description">
+            Comprehensive analysis with local multipliers, demographics, and millage rates
+        </div>
+        <div style="text-align: center; margin-top: 1rem;">
+            <span class="geo-card-badge">📊 Full Fiscal Impact</span>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+# Same for col2 with Florida Statewide
+```
+
+Actually, better approach - use native Streamlit buttons styled as cards. Replace the entire geography selector with:
+```python
+col1, col2 = st.columns(2)
+
+with col1:
+    # Card container
+    card_html = """
+    <div style="border: 2px solid #e0e0e0; border-radius: 12px; padding: 2rem; 
+                background: white; box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+                transition: all 0.3s ease; margin-bottom: 1rem;">
+        <div style="font-size: 3rem; text-align: center; margin-bottom: 1rem;">🏛️</div>
+        <div style="font-size: 1.5rem; font-weight: 600; color: #1f4788; 
+                    text-align: center; margin-bottom: 0.5rem;">Homestead CRA</div>
+        <div style="font-size: 1rem; color: #666; text-align: center; line-height: 1.5;">
+            Comprehensive analysis with local multipliers, demographics, and millage rates
+        </div>
+        <div style="text-align: center; margin-top: 1rem;">
+            <span style="background: #e8f5e9; color: #2e7d32; padding: 0.25rem 0.75rem; 
+                         border-radius: 12px; font-size: 0.875rem; font-weight: 500;">
+                📊 Full Fiscal Impact
+            </span>
+        </div>
+    </div>
+    """
+    st.markdown(card_html, unsafe_allow_html=True)
+    
+    if st.button("Select Homestead CRA", key="btn_homestead", use_container_width=True, type="primary"):
+        st.session_state.geography = "homestead"
+        st.rerun()
+```
+
+2. REPLACE EMOJIS WITH SVG ICONS:
+
+Instead of 🏛️ and 🌴, use Font Awesome or simple SVG icons:
+
+For Homestead (building icon):
+```html
+<div style="text-align: center; margin-bottom: 1rem;">
+    <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="#1f4788" stroke-width="2">
+        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+        <polyline points="9 22 9 12 15 12 15 22"></polyline>
+    </svg>
+</div>
+```
+
+For Florida (palm tree or state icon):
+```html
+<div style="text-align: center; margin-bottom: 1rem;">
+    <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="#1f4788" stroke-width="2">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="12" y1="2" x2="12" y2="22"></line>
+        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+    </svg>
+</div>
+```
+
+3. FIX LOGO DISPLAY:
+
+The logo should appear on EVERY screen. Add it back at the top:
+```python
+# At the very top, before checking geography
+col1, col2, col3 = st.columns([1, 2, 1])
+with col2:
+    try:
+        logo = Image.open("SE Logo.png")
+        st.image(logo, use_container_width=False, width=200)
+    except:
+        st.markdown("**Street Economics**")
+
+st.markdown("---")
+```
+
+4. FIX THE GEOGRAPHY BANNER:
+
+Replace the current banner with a cleaner header design:
+```python
+# Selected geography header (not a button-looking banner)
+geo_name = "Homestead CRA" if st.session_state.geography == "homestead" else "Florida Statewide"
+geo_icon_svg = """<svg>...</svg>"""  # Use SVG instead of emoji
+
+# Simple header with change button aligned right
+col1, col2 = st.columns([4, 1])
+
+with col1:
+    st.markdown(f"### {geo_name}")
+    if st.session_state.geography == "florida_statewide":
+        st.caption("Economic impact only - fiscal impacts require local millage rates")
+    else:
+        st.caption("Full fiscal and economic impact analysis")
+
+with col2:
+    if st.button("↻ Change", key="change_region", help="Select a different region"):
+        st.session_state.geography = None
+        st.rerun()
+
+st.markdown("---")
+```
+
+Apply all these changes and test. The UI should look much more professional without emojis and with better interaction.
