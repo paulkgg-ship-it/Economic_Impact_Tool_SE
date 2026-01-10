@@ -1,0 +1,78 @@
+Add a geography selection screen BEFORE the main form.
+
+Create a new section at the top of app.py (before the form):
+```python
+# Geography Selection
+st.title("Economic Impact Analysis Tool")
+st.markdown("### Select Your Geography")
+
+col1, col2 = st.columns(2)
+
+with col1:
+    if st.button("🏛️ Homestead CRA", use_container_width=True):
+        st.session_state.geography = "homestead"
+        st.rerun()
+
+with col2:
+    if st.button("🌴 Florida Statewide", use_container_width=True):
+        st.session_state.geography = "florida_statewide"
+        st.rerun()
+
+# Initialize geography if not set
+if 'geography' not in st.session_state:
+    st.session_state.geography = None
+
+# Show form only after geography is selected
+if st.session_state.geography:
+    st.info(f"Selected: {st.session_state.geography.replace('_', ' ').title()}")
+    
+    # ... rest of your form code ...
+else:
+    st.stop()  # Don't show form until geography selected
+```
+
+Update data_processor.py to load different multipliers based on geography:
+```python
+def prepare_llm_context(self, form_data: Dict[str, Any], geography: str = "homestead") -> Dict[str, Any]:
+    # Get industry from proposed_use
+    industry = self.get_industry_from_use(form_data.get('proposed_use', ''))
+    
+    # Load multipliers based on geography
+    if geography == "homestead":
+        multipliers = self.multipliers_by_industry.get(industry, self.multipliers_by_industry['cafe'])
+        demographics = self.homestead_demographics
+        fiscal_params = self.homestead_fiscal_parameters
+    elif geography == "florida_statewide":
+        multipliers = self.florida_statewide_multipliers.get(industry, self.multipliers_by_industry['cafe'])
+        demographics = self.florida_statewide_demographics
+        fiscal_params = self.florida_statewide_fiscal_parameters  # Generic FL values
+    
+    # ... rest of function
+```
+
+Add Florida statewide data to data_processor.py (hard-coded for MVP):
+```python
+self.florida_statewide_multipliers = {
+    'cafe': {'output': 1.48, 'employment': 1.30, 'earnings': 1.38, ...},
+    'restaurant': {'output': 1.55, 'employment': 1.35, 'earnings': 1.42, ...},
+    # ... other industries
+}
+
+self.florida_statewide_demographics = {
+    'population': 22_610_726,  # FL population
+    'median_income': 63_062,   # FL median
+    'labor_force': 10_800_000
+}
+
+self.florida_statewide_fiscal_parameters = {
+    'city_millage': 0.0,  # Not applicable statewide
+    'county_millage': 0.0,  # Not applicable statewide  
+    'combined_millage': 0.0,
+    'cra_capture_rate': 0.0,
+    'hard_cost_capitalization_rate': 0.60,
+    'property_value_annual_growth': 0.03,
+    'note': 'Florida statewide - fiscal parameters require local jurisdiction input'
+}
+```
+
+This gives MainStreet users economic impact data (jobs, output) but flags that fiscal impact requires local data.

@@ -187,10 +187,7 @@ with logo_col:
 with header_col:
     st.markdown('<div class="main-header">Economic Impact Analysis Tool</div>', unsafe_allow_html=True)
 
-st.markdown('<div class="sub-header">Street Economics - Homestead CRA Edition</div>', unsafe_allow_html=True)
-
-st.info("Complete the form below to generate your economic impact report")
-
+# Initialize session state
 if 'form_data' not in st.session_state:
     st.session_state['form_data'] = {}
 if 'report_generated' not in st.session_state:
@@ -203,6 +200,63 @@ if 'report_text' not in st.session_state:
     st.session_state['report_text'] = None
 if 'api_error' not in st.session_state:
     st.session_state['api_error'] = None
+if 'geography' not in st.session_state:
+    st.session_state['geography'] = None
+
+# ===== GEOGRAPHY SELECTION =====
+if st.session_state['geography'] is None:
+    st.markdown('<div class="sub-header">Select Your Geography</div>', unsafe_allow_html=True)
+    
+    st.markdown("Choose the geographic region for your economic impact analysis:")
+    
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        st.markdown("""
+        <div style="background: #f0f4f8; padding: 20px; border-radius: 10px; border-left: 4px solid #1f4788; margin-bottom: 10px;">
+            <h4 style="color: #1f4788; margin: 0;">Homestead CRA</h4>
+            <p style="color: #666; margin: 10px 0 0 0; font-size: 0.9rem;">
+                Full analysis with fiscal impacts, tax increment projections, and CRA-specific multipliers.
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
+        if st.button("Select Homestead CRA", use_container_width=True, type="primary"):
+            st.session_state['geography'] = "homestead"
+            st.rerun()
+    
+    with col2:
+        st.markdown("""
+        <div style="background: #f0f4f8; padding: 20px; border-radius: 10px; border-left: 4px solid #28a745; margin-bottom: 10px;">
+            <h4 style="color: #28a745; margin: 0;">Florida Statewide</h4>
+            <p style="color: #666; margin: 10px 0 0 0; font-size: 0.9rem;">
+                Economic impact analysis (jobs, output) for any Florida location. Fiscal impacts require local data.
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
+        if st.button("Select Florida Statewide", use_container_width=True):
+            st.session_state['geography'] = "florida_statewide"
+            st.rerun()
+    
+    st.stop()
+
+# Show selected geography
+geography_display = "Homestead CRA" if st.session_state['geography'] == "homestead" else "Florida Statewide"
+st.markdown(f'<div class="sub-header">Street Economics - {geography_display} Edition</div>', unsafe_allow_html=True)
+
+# Add button to change geography
+col1, col2, col3 = st.columns([3, 1, 3])
+with col2:
+    if st.button("Change Region", use_container_width=True):
+        st.session_state['geography'] = None
+        st.session_state['form_complete'] = False
+        st.session_state['report_generated'] = False
+        st.rerun()
+
+st.info("Complete the form below to generate your economic impact report")
+
+# Show warning for Florida Statewide about fiscal impacts
+if st.session_state['geography'] == "florida_statewide":
+    st.warning("Note: Florida Statewide analysis provides economic impacts (jobs, output, earnings). Fiscal impacts (tax increment, CRA revenue) require local jurisdiction millage rates.")
 
 with st.form(f"economic_impact_form_{st.session_state['form_key']}"):
     
@@ -560,7 +614,7 @@ with st.form(f"economic_impact_form_{st.session_state['form_key']}"):
                         st.session_state['report_generated'] = False
                         st.session_state['report_text'] = None
                     else:
-                        result = stack_client.run_analysis(st.session_state['form_data'])
+                        result = stack_client.run_analysis(st.session_state['form_data'], st.session_state.get('geography', 'homestead'))
                         
                         if result['success']:
                             report_json = result.get('report_json')

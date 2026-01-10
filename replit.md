@@ -1,7 +1,18 @@
 # Economic Impact Analysis Tool
 
 ## Overview
-A professional Streamlit web application designed for the Homestead CRA (Community Redevelopment Agency) to analyze economic impacts of development projects. The tool helps calculate and visualize the economic benefits of CRA-funded projects, integrating with Stack.ai for AI-powered report generation. The project aims to provide a comprehensive, user-friendly platform for economic impact assessment.
+A professional Streamlit web application for analyzing economic impacts of development projects. Supports multiple geographies including Homestead CRA and Florida Statewide. The tool integrates with Stack.ai for AI-powered report generation, providing comprehensive economic impact assessments for CRA-funded projects.
+
+## Geography Support
+The application supports two geographic regions:
+- **Homestead CRA**: Full analysis with fiscal impacts, tax increment projections, and CRA-specific multipliers
+- **Florida Statewide**: Economic impact analysis (jobs, output, earnings) for any Florida location; fiscal impacts require local jurisdiction millage rates
+
+Users select their geography before accessing the form. Each geography has its own set of:
+- Economic multipliers (Lightcast data)
+- Demographics (Census/Esri data)
+- Real estate data (CoStar data)
+- Fiscal parameters (local millage rates)
 
 ## User Preferences
 Not specified. The agent should infer preferences from the provided `replit.md` and act accordingly, prioritizing clarity, maintainability, and functionality.

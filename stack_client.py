@@ -31,13 +31,17 @@ class StackAIClient:
                     "STACK_AI_ORG_ID not found. Please provide either 'org_id/flow_id' in STACK_AI_FLOW_ID or set STACK_AI_ORG_ID separately."
                 )
 
-    def run_analysis(self, form_data: Dict[str, Any]) -> Dict[str, Any]:
+    def run_analysis(self, form_data: Dict[str, Any], geography: str = "homestead") -> Dict[str, Any]:
         """
         Sends form data to Stack.ai and returns the economic impact report
+        
+        Args:
+            form_data: Form inputs from the user
+            geography: Either "homestead" or "florida_statewide"
         """
         # Get condensed context from data processor (includes fiscal_parameters, multipliers, etc.)
         from data_processor import data_processor
-        llm_context = data_processor.prepare_llm_context(form_data)
+        llm_context = data_processor.prepare_llm_context(form_data, geography)
 
         # DEBUG: Log what we're sending
         print("=" * 60)
