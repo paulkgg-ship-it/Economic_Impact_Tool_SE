@@ -65,26 +65,109 @@ if is_streamlit_cloud:
 # ===== END DIAGNOSTIC MODE =====
 
 st.markdown("""
-    <style>
-    .main {
-        padding: 2rem;
+<style>
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    
+    .main .block-container {
+        max-width: 1200px;
+        padding-top: 2rem;
+        padding-bottom: 2rem;
     }
     
-    h1 {
-        color: #1f4788;
+    .logo-container {
+        text-align: center;
+        margin-bottom: 1rem;
+    }
+    
+    .hero-title {
+        font-size: 2.5rem;
         font-weight: 700;
+        color: #1f4788;
+        text-align: center;
+        margin-bottom: 1rem;
+        line-height: 1.2;
+    }
+    
+    .hero-subtitle {
+        font-size: 1.25rem;
+        color: #666;
+        text-align: center;
+        margin-bottom: 2rem;
+        line-height: 1.5;
+    }
+    
+    .geo-card {
+        background: white;
+        border: 2px solid #e0e0e0;
+        border-radius: 12px;
+        padding: 2rem;
+        margin: 1rem 0;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+    
+    .geo-card:hover {
+        border-color: #1f4788;
+        box-shadow: 0 4px 16px rgba(31, 71, 136, 0.15);
+        transform: translateY(-2px);
+    }
+    
+    .geo-card-icon {
+        font-size: 3rem;
+        text-align: center;
+        margin-bottom: 1rem;
+    }
+    
+    .geo-card-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #1f4788;
+        text-align: center;
         margin-bottom: 0.5rem;
     }
     
-    h2, h3 {
-        color: #1f4788;
+    .geo-card-description {
+        font-size: 1rem;
+        color: #666;
+        text-align: center;
+        line-height: 1.5;
     }
     
-    .subtitle {
-        color: #666;
-        font-size: 1.2rem;
-        margin-bottom: 2rem;
-        font-weight: 400;
+    .geo-card-badge {
+        display: inline-block;
+        background: #e8f5e9;
+        color: #2e7d32;
+        padding: 0.25rem 0.75rem;
+        border-radius: 12px;
+        font-size: 0.875rem;
+        font-weight: 500;
+        margin-top: 0.5rem;
+    }
+    
+    .selected-geo-banner {
+        background: linear-gradient(135deg, #1f4788 0%, #2d5ba5 100%);
+        color: white;
+        padding: 1.5rem;
+        border-radius: 8px;
+        margin-bottom: 1.5rem;
+    }
+    
+    .selected-geo-banner h3 {
+        margin: 0;
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: white;
+    }
+    
+    .selected-geo-banner p {
+        margin: 0.25rem 0 0 0;
+        opacity: 0.9;
+        font-size: 0.95rem;
+    }
+    
+    h1, h2, h3 {
+        color: #1f4788;
     }
     
     .stButton>button {
@@ -129,39 +212,6 @@ st.markdown("""
         border-top: 2px solid #e0e0e0;
     }
     
-    .block-container {
-        padding-top: 2rem;
-        padding-bottom: 2rem;
-    }
-    
-    label:has(+ div input[required]),
-    label:has(+ div textarea[required]) {
-        background-color: #f8f9fa;
-        padding: 0.25rem 0.5rem;
-        border-radius: 4px;
-    }
-    
-    div[data-testid="stTextInput"] label:contains("*"),
-    div[data-testid="stTextArea"] label:contains("*"),
-    div[data-testid="stNumberInput"] label:contains("*") {
-        font-weight: 600;
-    }
-    
-    div[data-testid="stTextInput"] label:contains("*")::after,
-    div[data-testid="stTextArea"] label:contains("*")::after,
-    div[data-testid="stNumberInput"] label:contains("*")::after {
-        color: #c41e3a;
-    }
-    
-    .main-header {
-        color: #1f4788;
-        font-size: 2.5rem;
-        font-weight: 700;
-        text-align: center;
-        margin-top: 1rem;
-        margin-bottom: 0.5rem;
-    }
-    
     .sub-header {
         color: #666;
         font-size: 1.3rem;
@@ -169,23 +219,20 @@ st.markdown("""
         margin-bottom: 2rem;
         font-weight: 400;
     }
-    </style>
+</style>
 """, unsafe_allow_html=True)
 
-# Add logo and header aligned
-logo_col, header_col = st.columns([1, 9])
-
-with logo_col:
+# Centered logo
+col1, col2, col3 = st.columns([1, 2, 1])
+with col2:
+    st.markdown('<div class="logo-container">', unsafe_allow_html=True)
     try:
         from PIL import Image
         logo = Image.open("SE Logo.png")
-        st.image(logo, width=80)
+        st.image(logo, use_container_width=False, width=200)
     except Exception as e:
-        # If logo fails to load, skip it
-        pass
-
-with header_col:
-    st.markdown('<div class="main-header">Economic Impact Analysis Tool</div>', unsafe_allow_html=True)
+        st.markdown("**Street Economics**")
+    st.markdown('</div>', unsafe_allow_html=True)
 
 # Initialize session state
 if 'form_data' not in st.session_state:
@@ -205,58 +252,100 @@ if 'geography' not in st.session_state:
 
 # ===== GEOGRAPHY SELECTION =====
 if st.session_state['geography'] is None:
-    st.markdown('<div class="sub-header">Select Your Geography</div>', unsafe_allow_html=True)
+    # Hero section
+    st.markdown('<h1 class="hero-title">Economic Impact Analysis Tool</h1>', unsafe_allow_html=True)
+    st.markdown('<p class="hero-subtitle">Professional economic and fiscal impact reports for community redevelopment projects</p>', unsafe_allow_html=True)
     
-    st.markdown("Choose the geographic region for your economic impact analysis:")
+    st.markdown("---")
     
+    # Geography selector heading
+    st.markdown("### Choose Your Analysis Region")
+    st.markdown("Select the geographic scope for your economic impact analysis:")
+    
+    # Geography cards in columns
     col1, col2 = st.columns(2)
     
     with col1:
         st.markdown("""
-        <div style="background: #f0f4f8; padding: 20px; border-radius: 10px; border-left: 4px solid #1f4788; margin-bottom: 10px;">
-            <h4 style="color: #1f4788; margin: 0;">Homestead CRA</h4>
-            <p style="color: #666; margin: 10px 0 0 0; font-size: 0.9rem;">
-                Full analysis with fiscal impacts, tax increment projections, and CRA-specific multipliers.
-            </p>
+        <div class="geo-card">
+            <div class="geo-card-icon">🏛️</div>
+            <div class="geo-card-title">Homestead CRA</div>
+            <div class="geo-card-description">
+                Comprehensive analysis with local multipliers, demographics, and millage rates for Homestead Community Redevelopment Agency
+            </div>
+            <div style="text-align: center; margin-top: 1rem;">
+                <span class="geo-card-badge">📊 Full Fiscal Impact</span>
+            </div>
         </div>
         """, unsafe_allow_html=True)
-        if st.button("Select Homestead CRA", use_container_width=True, type="primary"):
+        
+        if st.button("Select Homestead CRA", key="btn_homestead", use_container_width=True):
             st.session_state['geography'] = "homestead"
             st.rerun()
     
     with col2:
         st.markdown("""
-        <div style="background: #f0f4f8; padding: 20px; border-radius: 10px; border-left: 4px solid #28a745; margin-bottom: 10px;">
-            <h4 style="color: #28a745; margin: 0;">Florida Statewide</h4>
-            <p style="color: #666; margin: 10px 0 0 0; font-size: 0.9rem;">
-                Economic impact analysis (jobs, output) for any Florida location. Fiscal impacts require local data.
-            </p>
+        <div class="geo-card">
+            <div class="geo-card-icon">🌴</div>
+            <div class="geo-card-title">Florida Statewide</div>
+            <div class="geo-card-description">
+                Economic impact analysis using Florida statewide multipliers. Ideal for preliminary assessments and MainStreet programs
+            </div>
+            <div style="text-align: center; margin-top: 1rem;">
+                <span class="geo-card-badge" style="background: #fff3e0; color: #e65100;">💼 Economic Only</span>
+            </div>
         </div>
         """, unsafe_allow_html=True)
-        if st.button("Select Florida Statewide", use_container_width=True):
+        
+        if st.button("Select Florida Statewide", key="btn_florida", use_container_width=True):
             st.session_state['geography'] = "florida_statewide"
             st.rerun()
     
+    # Info section at bottom
+    st.markdown("---")
+    
+    col1, col2, col3 = st.columns(3)
+    
+    with col1:
+        st.markdown("#### 📈 Data Sources")
+        st.markdown("Lightcast multipliers, Esri demographics, CoStar real estate data")
+    
+    with col2:
+        st.markdown("#### ⚡ Fast Results")
+        st.markdown("Professional reports generated in 2-3 minutes")
+    
+    with col3:
+        st.markdown("#### 📄 Export Options")
+        st.markdown("Download as formatted PDF for board presentations")
+    
     st.stop()
 
-# Show selected geography
-geography_display = "Homestead CRA" if st.session_state['geography'] == "homestead" else "Florida Statewide"
-st.markdown(f'<div class="sub-header">Street Economics - {geography_display} Edition</div>', unsafe_allow_html=True)
+# FORM SCREEN (show after geography selected)
+geo_name = "Homestead CRA" if st.session_state['geography'] == "homestead" else "Florida Statewide"
+geo_icon = "🏛️" if st.session_state['geography'] == "homestead" else "🌴"
+geo_note = "Full fiscal and economic impact analysis" if st.session_state['geography'] == "homestead" else "Economic impact only - fiscal impacts require local millage rates"
 
-# Add button to change geography
-col1, col2, col3 = st.columns([3, 1, 3])
+# Selected geography banner with change button
+col1, col2 = st.columns([4, 1])
+
+with col1:
+    st.markdown(f"""
+    <div class="selected-geo-banner">
+        <h3>{geo_icon} {geo_name}</h3>
+        <p>{geo_note}</p>
+    </div>
+    """, unsafe_allow_html=True)
+
 with col2:
-    if st.button("Change Region", use_container_width=True):
+    if st.button("Change Region", key="change_region", use_container_width=True):
         st.session_state['geography'] = None
         st.session_state['form_complete'] = False
         st.session_state['report_generated'] = False
         st.rerun()
 
-st.info("Complete the form below to generate your economic impact report")
-
 # Show warning for Florida Statewide about fiscal impacts
 if st.session_state['geography'] == "florida_statewide":
-    st.warning("Note: Florida Statewide analysis provides economic impacts (jobs, output, earnings). Fiscal impacts (tax increment, CRA revenue) require local jurisdiction millage rates.")
+    st.warning("⚠️ **Florida Statewide Note:** This analysis provides economic impacts (jobs, output, earnings) using Florida statewide multipliers. Fiscal impacts (tax increment, CRA revenue) require local jurisdiction millage rates and are not included in this analysis.")
 
 with st.form(f"economic_impact_form_{st.session_state['form_key']}"):
     
