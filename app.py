@@ -259,17 +259,20 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# Centered logo
+# Logo display with better error handling
 col1, col2, col3 = st.columns([1, 2, 1])
 with col2:
-    st.markdown('<div class="logo-container">', unsafe_allow_html=True)
     try:
         from PIL import Image
         logo = Image.open("SE Logo.png")
         st.image(logo, use_container_width=False, width=200)
+    except FileNotFoundError:
+        st.markdown('<h2 style="text-align: center; color: #1f4788;">Street Economics</h2>', 
+                   unsafe_allow_html=True)
     except Exception as e:
-        st.markdown("**Street Economics**")
-    st.markdown('</div>', unsafe_allow_html=True)
+        st.markdown('<h2 style="text-align: center; color: #1f4788;">Street Economics</h2>', 
+                   unsafe_allow_html=True)
+        print(f"Logo error: {e}")
 
 # Initialize session state
 if 'form_data' not in st.session_state:
