@@ -219,6 +219,43 @@ st.markdown("""
         margin-bottom: 2rem;
         font-weight: 400;
     }
+    
+    /* Form container - constrained width */
+    .form-container {
+        max-width: 900px;
+        margin: 0 auto;
+    }
+    
+    /* Change region button styling */
+    .change-region-btn button {
+        background: rgba(255,255,255,0.2) !important;
+        color: white !important;
+        border: 1px solid rgba(255,255,255,0.3) !important;
+    }
+    
+    .change-region-btn button:hover {
+        background: rgba(255,255,255,0.3) !important;
+    }
+    
+    /* Mobile responsiveness */
+    @media (max-width: 768px) {
+        .hero-title {
+            font-size: 1.75rem;
+        }
+        
+        .geo-card {
+            margin: 0.5rem 0;
+            padding: 1.5rem;
+        }
+        
+        .form-container {
+            padding: 0 1rem;
+        }
+        
+        .selected-geo-banner {
+            padding: 1rem;
+        }
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -346,6 +383,9 @@ with col2:
 # Show warning for Florida Statewide about fiscal impacts
 if st.session_state['geography'] == "florida_statewide":
     st.warning("⚠️ **Florida Statewide Note:** This analysis provides economic impacts (jobs, output, earnings) using Florida statewide multipliers. Fiscal impacts (tax increment, CRA revenue) require local jurisdiction millage rates and are not included in this analysis.")
+
+# Wrap form in constrained container
+st.markdown('<div class="form-container">', unsafe_allow_html=True)
 
 with st.form(f"economic_impact_form_{st.session_state['form_key']}"):
     
@@ -1117,6 +1157,9 @@ elif st.session_state.get('form_complete', False):
                 st.session_state['report_generated'] = False
                 st.session_state['form_complete'] = False
                 st.rerun()
+
+# Close form container
+st.markdown('</div>', unsafe_allow_html=True)
 
 # Footer
 st.markdown("---")
