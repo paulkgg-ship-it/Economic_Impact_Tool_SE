@@ -1,0 +1,148 @@
+Fix the geography selector and logo display issues:
+
+1. ADD STREET ECONOMICS LOGO BACK TO TOP OF EVERY PAGE:
+
+At the very top of app.py, before ANY other content, add:
+```python
+from PIL import Image
+import streamlit as st
+
+# Logo - appears on every page
+col1, col2, col3 = st.columns([1, 2, 1])
+with col2:
+    try:
+        logo = Image.open("SE Logo.png")
+        st.image(logo, use_container_width=False, width=200)
+    except Exception as e:
+        st.markdown('<h2 style="text-align: center; color: #1f4788;">Street Economics</h2>', 
+                   unsafe_allow_html=True)
+
+st.markdown("---")
+```
+
+This should be BEFORE the geography check, so it shows on both the welcome screen AND the form screens.
+
+2. FIX GEOGRAPHY CARDS TO USE UPLOADED IMAGES:
+
+Replace the geography selector section with this code that properly loads the images:
+```python
+# Check if geography is selected
+if 'geography' not in st.session_state:
+    st.session_state.geography = None
+
+# WELCOME SCREEN
+if not st.session_state.geography:
+    
+    # Hero section
+    st.markdown('<h1 style="text-align: center; font-size: 2.5rem; font-weight: 700; color: #1f4788; margin-bottom: 1rem;">Economic Impact Analysis Tool</h1>', unsafe_allow_html=True)
+    st.markdown('<p style="text-align: center; font-size: 1.25rem; color: #666; margin-bottom: 3rem;">Professional economic and fiscal impact reports for community redevelopment projects</p>', unsafe_allow_html=True)
+    
+    st.markdown("---")
+    
+    # Geography selector heading
+    st.markdown("### Choose Your Analysis Region")
+    st.markdown("Select the geographic scope for your economic impact analysis:")
+    st.markdown("")  # Spacing
+    
+    # Geography cards in columns
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        # Load and display icon
+        try:
+            local_icon = Image.open("local_cra_icon.png")
+            st.image(local_icon, width=120)
+        except:
+            st.markdown("🏛️")
+        
+        st.markdown("""
+        <div style="text-align: center; margin-top: 1rem; margin-bottom: 1rem;">
+            <h3 style="color: #1f4788; font-size: 1.5rem; margin-bottom: 0.5rem;">Homestead CRA</h3>
+            <p style="color: #666; font-size: 1rem; line-height: 1.5;">
+                Comprehensive analysis with local multipliers, demographics, and millage rates
+            </p>
+            <span style="display: inline-block; background: #e8f5e9; color: #2e7d32; 
+                         padding: 0.25rem 0.75rem; border-radius: 12px; 
+                         font-size: 0.875rem; font-weight: 500; margin-top: 0.5rem;">
+                📊 Full Fiscal Impact
+            </span>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        if st.button("Select Homestead CRA", key="btn_homestead", use_container_width=True, type="primary"):
+            st.session_state.geography = "homestead"
+            st.rerun()
+    
+    with col2:
+        # Load and display icon
+        try:
+            florida_icon = Image.open("florida_statewide_icon.png")
+            st.image(florida_icon, width=120)
+        except:
+            st.markdown("🌴")
+        
+        st.markdown("""
+        <div style="text-align: center; margin-top: 1rem; margin-bottom: 1rem;">
+            <h3 style="color: #1f4788; font-size: 1.5rem; margin-bottom: 0.5rem;">Florida Statewide</h3>
+            <p style="color: #666; font-size: 1rem; line-height: 1.5;">
+                Economic impact analysis using statewide multipliers for any Florida location
+            </p>
+            <span style="display: inline-block; background: #fff3e0; color: #e65100; 
+                         padding: 0.25rem 0.75rem; border-radius: 12px; 
+                         font-size: 0.875rem; font-weight: 500; margin-top: 0.5rem;">
+                💼 Economic Only
+            </span>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        if st.button("Select Florida Statewide", key="btn_florida", use_container_width=True, type="primary"):
+            st.session_state.geography = "florida_statewide"
+            st.rerun()
+    
+    # Info section at bottom
+    st.markdown("---")
+    
+    col1, col2, col3 = st.columns(3)
+    
+    with col1:
+        st.markdown("#### 📈 Data Sources")
+        st.markdown("Lightcast multipliers, Esri demographics, CoStar real estate data")
+    
+    with col2:
+        st.markdown("#### ⚡ Fast Results")
+        st.markdown("Professional reports generated in 2-3 minutes")
+    
+    with col3:
+        st.markdown("#### 📄 Export Options")
+        st.markdown("Download as formatted PDF for board presentations")
+    
+    st.stop()
+```
+
+3. UPDATE FOOTER TEXT IN PDF GENERATOR:
+
+In pdf_generator.py, find the footer section and change it from:
+```python
+<p>Powered by Street Economics | BusinessFlare® Analytics</p>
+```
+
+To:
+```python
+<p>Powered by Street Economics | BusinessFlare®</p>
+```
+
+4. VERIFY FILE LOCATIONS:
+
+Make sure these files are in the main Replit folder (same location as app.py):
+- SE Logo.png
+- local_cra_icon.png
+- florida_statewide_icon.png
+
+If they're not there, move them to the root directory.
+
+This should fix:
+✓ Logo displays on all pages
+✓ Icons display inside the cards (not below them)
+✓ Cards look professional with proper spacing
+✓ Buttons work to select geography
+✓ Footer text updated to remove "Analytics"

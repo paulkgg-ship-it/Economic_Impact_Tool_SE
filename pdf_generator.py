@@ -258,7 +258,7 @@ def generate_pdf_from_json(report_data: dict, project_name: str) -> bytes:
         <p style="font-size: 12pt; color: #1f4788; margin-bottom: 20px;"><strong>{project_name}</strong></p>
         {content_html}
         <div class="footer">
-            <p>Powered by Street Economics | BusinessFlare® Analytics</p>
+            <p>Powered by Street Economics | BusinessFlare®</p>
             <p>Homestead Community Redevelopment Agency</p>
         </div>
     </body>

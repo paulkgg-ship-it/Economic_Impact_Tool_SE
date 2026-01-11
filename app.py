@@ -5,6 +5,19 @@ import plotly.graph_objects as go
 import plotly.express as px
 import os
 import sys
+import base64
+
+@st.cache_data
+def get_base64_image(image_path):
+    """Load an image and return its base64 encoding for embedding in HTML."""
+    try:
+        with open(image_path, "rb") as f:
+            return base64.b64encode(f.read()).decode()
+    except FileNotFoundError:
+        return None
+    except Exception as e:
+        print(f"Error loading image {image_path}: {e}")
+        return None
 
 load_dotenv()
 
@@ -302,15 +315,26 @@ if st.session_state['geography'] is None:
     st.markdown("### Choose Your Analysis Region")
     st.markdown("Select the geographic scope for your economic impact analysis:")
     
-    # Geography cards in columns with inline styles and SVG icons
+    # Load icons as base64 for embedding in HTML
+    homestead_icon_b64 = get_base64_image("attached_assets/generated_images/local_cra_building_icon.png")
+    florida_icon_b64 = get_base64_image("attached_assets/generated_images/florida_statewide_globe_icon.png")
+    
+    # Fallback SVG icons if images not available
+    homestead_icon_html = f'<img src="data:image/png;base64,{homestead_icon_b64}" style="width: 80px; height: 80px; object-fit: contain;">' if homestead_icon_b64 else '<svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="#1f4788" stroke-width="1.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>'
+    florida_icon_html = f'<img src="data:image/png;base64,{florida_icon_b64}" style="width: 80px; height: 80px; object-fit: contain;">' if florida_icon_b64 else '<svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="#1f4788" stroke-width="1.5"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="2" x2="12" y2="22"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>'
+    
+    # Geography cards in columns
     col1, col2 = st.columns(2)
     
     with col1:
-        # Homestead CRA card with custom icon
-        st.markdown("""
+        # Homestead CRA card with embedded icon
+        st.markdown(f"""
         <div style="border: 2px solid #e0e0e0; border-radius: 12px; padding: 2rem; 
                     background: white; box-shadow: 0 2px 8px rgba(0,0,0,0.08);
                     transition: all 0.3s ease; margin-bottom: 1rem;">
+            <div style="text-align: center; margin-bottom: 1rem;">
+                {homestead_icon_html}
+            </div>
             <div style="font-size: 1.5rem; font-weight: 600; color: #1f4788; 
                         text-align: center; margin-bottom: 0.5rem;">Homestead CRA</div>
             <div style="font-size: 1rem; color: #666; text-align: center; line-height: 1.5;">
@@ -325,22 +349,19 @@ if st.session_state['geography'] is None:
         </div>
         """, unsafe_allow_html=True)
         
-        # Display icon
-        try:
-            st.image("attached_assets/generated_images/local_cra_building_icon.png", width=80)
-        except:
-            pass
-        
         if st.button("Select Homestead CRA", key="btn_homestead", use_container_width=True, type="primary"):
             st.session_state['geography'] = "homestead"
             st.rerun()
     
     with col2:
-        # Florida Statewide card with custom icon
-        st.markdown("""
+        # Florida Statewide card with embedded icon
+        st.markdown(f"""
         <div style="border: 2px solid #e0e0e0; border-radius: 12px; padding: 2rem; 
                     background: white; box-shadow: 0 2px 8px rgba(0,0,0,0.08);
                     transition: all 0.3s ease; margin-bottom: 1rem;">
+            <div style="text-align: center; margin-bottom: 1rem;">
+                {florida_icon_html}
+            </div>
             <div style="font-size: 1.5rem; font-weight: 600; color: #1f4788; 
                         text-align: center; margin-bottom: 0.5rem;">Florida Statewide</div>
             <div style="font-size: 1rem; color: #666; text-align: center; line-height: 1.5;">
@@ -354,12 +375,6 @@ if st.session_state['geography'] is None:
             </div>
         </div>
         """, unsafe_allow_html=True)
-        
-        # Display icon
-        try:
-            st.image("attached_assets/generated_images/florida_statewide_globe_icon.png", width=80)
-        except:
-            pass
         
         if st.button("Select Florida Statewide", key="btn_florida", use_container_width=True):
             st.session_state['geography'] = "florida_statewide"
